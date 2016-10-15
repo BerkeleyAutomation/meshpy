@@ -9,17 +9,9 @@ import os
 import sys
 import time
 
-import dexnet.meshrender as meshrender
-from dexnet.rendered_image import RenderedImage
-from alan.rgbd import CameraIntrinsics, DepthImage
+import meshpy.meshrender as meshrender
+from alan.rgbd import CameraIntrinsics, DepthImage, ObjectRender, RenderMode
 from alan.core import RigidTransform
-
-
-
-class RenderMode(object):
-    COLOR = 0
-    DEPTH = 1
-    SCALED_DEPTH = 2
 
 class ViewsphereDiscretizer(object):
     """Set of parameters for automatically rendering a set of images from virtual
@@ -301,7 +293,7 @@ class VirtualCamera(object):
 
     def wrapped_images(self, mesh, object_to_camera_poses,
                        render_mode, stable_pose=None, debug=False):
-        """Create RenderedImage objects of the given mesh at the list of object to camera poses.
+        """Create ObjectRender objects of the given mesh at the list of object to camera poses.
 
         Parameters
         ----------
@@ -323,8 +315,8 @@ class VirtualCamera(object):
 
         Returns
         -------
-        :obj:`list` of :obj:`RenderedImage`
-            A list of RenderedImage objects generated from the given parameters.
+        :obj:`list` of :obj:`ObjectRender`
+            A list of ObjectRender objects generated from the given parameters.
         """
         # pre-multiply the stable pose
         if stable_pose is not None:
@@ -341,19 +333,21 @@ class VirtualCamera(object):
         # render both image types (doesn't really cost any time)
         color_ims, depth_ims = self.images(mesh, object_to_camera_poses)
 
-        # create rendered images for each
-        if render_mode == RenderMode.COLOR:
-            images = color_ims
+        # convert to image wrapper classes
+        images = []
+        if render_mode == RenderMode.SEGMASK:
+            for binary_im in binary_ims:
+                images.append(BinaryImage(binary_im[:,:,0], frame=self._camera_intr.frame))
         elif render_mode == RenderMode.DEPTH:
-            images = depth_ims
+            for depth_im in depth_ims:
+                images.append(DepthImage(depth_im, frame=self._camera_intr.frame))
         elif render_mode == RenderMode.SCALED_DEPTH:
-            images = []
             for depth_im in depth_ims:
                 d = DepthImage(depth_im, frame='camera')
-                c = d.to_color()
-                images.append(c.data)
+                images.append(d.to_color())
         else:
-            return []
+            logging.warning('Render mode %s not supported. Returning None' %(render_mode))
+            return None
 
         # create rendered images
         if stable_pose is not None:
@@ -361,11 +355,11 @@ class VirtualCamera(object):
         rendered_images = []
         for image, T_obj_camera in zip(images, object_to_camera_poses):
             T_camera_obj = T_obj_camera.inverse()
-            rendered_images.append(RenderedImage(image, T_camera_obj.rotation, T_camera_obj.translation, frame=T_obj_camera.to_frame))
+            rendered_images.append(ObjectRender(image, T_camera_obj))
         return rendered_images
 
     def wrapped_images_viewsphere(self, mesh, vs_disc, render_mode, stable_pose=None):
-        """ Create RenderedImage objects of the given mesh around a viewsphere.
+        """ Create ObjectRender objects of the given mesh around a viewsphere.
         Parameters
         ----------
         mesh : :obj:`Mesh3D`
@@ -384,8 +378,8 @@ class VirtualCamera(object):
 
         Returns
         -------
-        :obj:`list` of :obj:`RenderedImage`
-            A list of RenderedImage objects generated from the given parameters.
+        :obj:`list` of :obj:`ObjectRender`
+            A list of ObjectRender objects generated from the given parameters.
         """
         return self.wrapped_images(mesh, vs_disc.object_to_camera_poses(), render_mode, stable_pose=stable_pose)
 
