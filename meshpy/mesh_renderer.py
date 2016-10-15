@@ -14,6 +14,8 @@ from dexnet.rendered_image import RenderedImage
 from alan.rgbd import CameraIntrinsics, DepthImage
 from alan.core import RigidTransform
 
+
+
 class RenderMode(object):
     COLOR = 0
     DEPTH = 1
