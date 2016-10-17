@@ -1,7 +1,7 @@
 """
 A basic struct-like Stable Pose class to make accessing pose probability and rotation matrix easier
 
-Author: Nikhil Sharma
+Author: Matt Matl and Nikhil Sharma
 """
 import numpy as np
 
@@ -44,7 +44,7 @@ class StablePose(object):
         self.x0 = x0
         self.id = stp_id
 
-        # HACK: to fix stable pose bug
+        # fix stable pose bug
         if np.abs(np.linalg.det(self.r) + 1) < 0.01:
             self.r[1,:] = -self.r[1,:]
 

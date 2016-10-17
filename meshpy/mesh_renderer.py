@@ -10,7 +10,7 @@ import sys
 import time
 
 import meshpy.meshrender as meshrender
-from alan.rgbd import CameraIntrinsics, DepthImage, ObjectRender, RenderMode
+from alan.rgbd import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
 from alan.core import RigidTransform
 
 class ViewsphereDiscretizer(object):
@@ -168,14 +168,14 @@ class ViewsphereDiscretizer(object):
         return object_to_camera_poses
 
     @staticmethod
-    def _sph2cart(r, az, elev):
+    def sph2cart(r, az, elev):
         x = r * np.cos(az) * np.sin(elev)
         y = r * np.sin(az) * np.sin(elev)
         z = r * np.cos(elev)
         return x, y, z
 
     @staticmethod
-    def _cart2sph(x, y, z):
+    def cart2sph(x, y, z):
         r = np.sqrt(x**2 + y**2 + z**2)
         if x > 0 and y > 0:
             az = np.arctan(y / x)
@@ -256,16 +256,16 @@ class VirtualCamera(object):
 
         # render images for each
         render_start = time.time()
-        color_ims, depth_ims = meshrender.render_mesh(projections,
+        binary_ims, depth_ims = meshrender.render_mesh(projections,
                                                       self._camera_intr.height,
                                                       self._camera_intr.width,
                                                       vertex_arr,
                                                       tri_arr,
                                                       debug)
         render_stop = time.time()
-        #logging.debug('Rendering took %.3f sec' %(render_stop - render_start))
+        logging.debug('Rendering took %.3f sec' %(render_stop - render_start))
 
-        return color_ims, depth_ims
+        return binary_ims, depth_ims
 
     def images_viewsphere(self, mesh, vs_disc):
         """Render images of the given mesh around a view sphere.
@@ -331,7 +331,7 @@ class VirtualCamera(object):
                 object_to_camera_poses.append(T_stp_camera.dot(T_obj_stp))
 
         # render both image types (doesn't really cost any time)
-        color_ims, depth_ims = self.images(mesh, object_to_camera_poses)
+        binary_ims, depth_ims = self.images(mesh, object_to_camera_poses)
 
         # convert to image wrapper classes
         images = []

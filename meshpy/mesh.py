@@ -741,7 +741,8 @@ class Mesh3D(object):
         for face, p in prob_map.items():
             x0 = cvh_verts[face[0]]
             r = cvh_mesh._compute_basis([cvh_verts[i] for i in face])
-            stable_poses.append(sp.StablePose(p, r, x0))
+            if p > 0.0:
+                stable_poses.append(sp.StablePose(p, r, x0))
         return stable_poses
 
     def visualize(self, color=(0.5, 0.5, 0.5), style='surface', opacity=1.0):
@@ -1275,7 +1276,8 @@ class Mesh3D(object):
         common_endpoint = None
 
         for segment in line_segments:
-            distances.append(segment.dist_to_point(point))
+            dist = segment.dist_to_point(point)
+            distances.append(dist)
             segments.append(segment)
             if dist < min_dist:
                 min_dist = dist

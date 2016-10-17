@@ -1,5 +1,8 @@
+"""
+File for loading and saving meshes from .OBJ files
+Author: Jeff Mahler
+"""
 import os
-
 import mesh
 
 class ObjFile:
@@ -141,6 +144,3 @@ class ObjFile:
             f.write('f %d %d %d\n' %(t[0]+1, t[1]+1, t[2]+1)) # convert back to 1-indexing
 
         f.close()
-
-if __name__ == '__main__':
-    pass
