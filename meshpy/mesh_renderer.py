@@ -9,7 +9,7 @@ import os
 import sys
 import time
 
-import meshpy.meshrender as meshrender
+import meshrender
 from alan.rgbd import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
 from alan.core import RigidTransform
 
