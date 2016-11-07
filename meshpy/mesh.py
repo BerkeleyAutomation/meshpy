@@ -11,9 +11,10 @@ import numpy as np
 import scipy.spatial as ss
 import sklearn.decomposition
 
+from core import RigidTransform, PointCloud
+
 import obj_file
 import stable_pose as sp
-from alan.core import RigidTransform, PointCloud
 
 class Mesh3D(object):
     """A triangular mesh for a three-dimensional shape representation.

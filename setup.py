@@ -4,6 +4,16 @@ Author: Jeff Mahler
 """
 from setuptools import setup, Extension
 
+requirements = [
+    'numpy',
+    'perception',
+    'core',
+    'scipy',
+    'sklearn',
+    'Pillow',
+    'nearpy'
+]
+
 meshrender = Extension('meshrender',
                        include_dirs = ['/usr/include',
                                         '${PYTHONPATH}'],
@@ -22,5 +32,6 @@ setup(name='meshpy',
       package_dir = {'': '.'},
       packages=['meshpy'],
       ext_modules = [meshrender],
+      install_requires=requirements,
       test_suite='test'
      )

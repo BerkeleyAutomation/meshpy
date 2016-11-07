@@ -10,7 +10,7 @@ from stp_file import StablePoseFile
 __all__ = ['Mesh3D',
            'RenderMode', 'ViewsphereDiscretizer', 'VirtualCamera',
            'ObjFile', 'OffFile',
-           'Sdf', 'Sdf3D', 'Sdf2D',
+           'Sdf', 'Sdf3D',
            'SdfFile',
            'StablePose',
            'StablePoseFile']

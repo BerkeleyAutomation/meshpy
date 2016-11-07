@@ -5,7 +5,7 @@ Author: Matt Matl and Nikhil Sharma
 """
 import numpy as np
 
-from alan.core import RigidTransform
+from core import RigidTransform
 
 class StablePose(object):
     """A representation of a mesh's stable pose.

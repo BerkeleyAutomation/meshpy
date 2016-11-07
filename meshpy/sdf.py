@@ -11,16 +11,16 @@ from numbers import Number
 from PIL import Image
 import scipy.io
 import scipy.ndimage
+import random
+import string
 
 import sdf_file as sf
 import time
 
 from nearpy import Engine
 from nearpy.hashes import RandomBinaryProjections
-import random
-import string
 
-from alan.core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
+from core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
 
 from sys import version_info
 if version_info[0] != 3:

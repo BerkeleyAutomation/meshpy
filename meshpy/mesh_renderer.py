@@ -9,9 +9,10 @@ import os
 import sys
 import time
 
+from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
+from core import RigidTransform
+
 import meshrender
-from alan.rgbd import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
-from alan.core import RigidTransform
 
 class ViewsphereDiscretizer(object):
     """Set of parameters for automatically rendering a set of images from virtual
