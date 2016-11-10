@@ -200,9 +200,6 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
                                                                                         sizeof(float)),
                                                               boost::python::object());
     depth_ims.append(depth_arr);
-
-    delete [] p_color_buffer;
-    delete [] p_depth_buffer;
   }
   
   // free the image buffer
