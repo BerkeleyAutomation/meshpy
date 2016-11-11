@@ -9,8 +9,8 @@ import os
 import sys
 import time
 
-from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
 from core import RigidTransform
+from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
 
 import meshrender
 
