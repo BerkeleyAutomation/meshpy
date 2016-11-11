@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 import numpy as np
 from numbers import Number
+import IPython
 from PIL import Image
 import scipy.io
 import scipy.ndimage
@@ -257,7 +258,7 @@ class Sdf3D(Sdf):
         Gets the indices of the flattened array
         """
         [x_ind, y_ind, z_ind] = np.indices(self.dims_)
-        self.pts_ = np.c_[x_ind.flatten().T, np.c_[y_ind.flatten().T, z_ind.flatten().T]]
+        self.pts_ = np.c_[x_ind.flatten().T, np.c_[y_ind.flatten().T, z_ind.flatten().T]].astype(np.float32)
 
     def _signed_distance(self, coords):
         """Returns the signed distance at the given coordinates, interpolating
@@ -567,14 +568,14 @@ class Sdf3D(Sdf):
         start_t = time.clock()
         num_pts = self.pts_.shape[0]
         pts_sdf = self.T_grid_sdf_ * PointCloud(self.pts_.T, frame='grid')
-        pts_sdf_tf = delta_T * pts_sdf
+        pts_sdf_tf = delta_T.as_frames('sdf', 'sdf') * pts_sdf
         pts_grid_tf = self.T_sdf_grid_ * pts_sdf_tf
         pts_tf = pts_grid_tf.data.T
         all_points_t = time.clock()
 
         # transform the center
         origin_sdf = self.T_grid_sdf_ * Point(self.origin_, frame='grid')
-        origin_sdf_tf = delta_T * origin_sdf
+        origin_sdf_tf = delta_T.as_frames('sdf', 'sdf') * origin_sdf
         origin_tf = self.T_sdf_grid_ * origin_sdf_tf
         origin_tf = origin_tf.data
 
