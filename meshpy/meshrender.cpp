@@ -186,7 +186,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     boost::python::tuple color_shape = boost::python::make_tuple(im_height, im_width, 3);
     boost::numpy::dtype color_dt = boost::numpy::dtype::get_builtin<unsigned char>();
     boost::numpy::ndarray color_arr = boost::numpy::from_data(color_result, color_dt, color_shape,
-                                                              boost::python::make_tuple(color_shape[0]*color_shape[2]*sizeof(unsigned char),
+                                                              boost::python::make_tuple(color_shape[1]*color_shape[2]*sizeof(unsigned char),
                                                                                         color_shape[2]*sizeof(unsigned char),
                                                                                         sizeof(unsigned char)),
                                                               boost::python::object());
@@ -196,7 +196,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     boost::python::tuple depth_shape = boost::python::make_tuple(im_height, im_width);
     boost::numpy::dtype depth_dt = boost::numpy::dtype::get_builtin<float>();
     boost::numpy::ndarray depth_arr = boost::numpy::from_data(depth_result, depth_dt, depth_shape,
-                                                              boost::python::make_tuple(depth_shape[0]*sizeof(float),
+                                                              boost::python::make_tuple(depth_shape[1]*sizeof(float),
                                                                                         sizeof(float)),
                                                               boost::python::object());
     depth_ims.append(depth_arr);
