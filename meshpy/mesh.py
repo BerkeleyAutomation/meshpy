@@ -364,6 +364,20 @@ class Mesh3D(object):
                 normals = -normals
         return normals
 
+    def surface_area(self):
+        """Return the surface area of the mesh.
+
+        Returns
+        -------
+        float
+            The surface area of the mesh.
+        """
+        area = 0.0
+        for tri in self.triangles:
+            tri_area = self._area_of_tri(tri)
+            area += tri_area
+        return area
+
     def total_volume(self):
         """Return the total volume of the mesh.
 
@@ -440,8 +454,8 @@ class Mesh3D(object):
 
         try:
             self.vertices = self.vertices_[reffed_v_old_ind, :]
-            if self.normals_ is not None:
-                self.normals = self.normals_[reffed_v_old_ind, :]
+            if self.normals is not None:
+                self.normals = self.normals[reffed_v_old_ind, :]
         except IndexError:
             return False
 
@@ -512,7 +526,56 @@ class Mesh3D(object):
 
         # TODO JEFF LOOK HERE (BUG IN INITIAL CODE FROM MESHPROCESSOR)
         if self.normals_ is not None:
-            self.normals = (R_pc_obj.T.dot(self.normals)).T
+            self.normals = (R_pc_obj.T.dot(self.normals.T)).T
+
+    def compute_vertex_normals(self):
+        """ Get normals from triangles"""
+        normals = []
+        for i in range(len(self.vertices)):
+            inds = np.where(self.triangles == i)
+            first_tri = self.triangles[inds[0][0],:]
+            t = self.vertices[first_tri, :]
+            v0 = t[1,:] - t[0,:]
+            v1 = t[2,:] - t[0,:]
+            v0 = v0 / np.linalg.norm(v0)
+            v1 = v1 / np.linalg.norm(v1)
+            n = np.cross(v0, v1)
+            n = n / np.linalg.norm(n)
+            normals.append(n.tolist())
+
+        # Reverse normals based on alignment with convex hull
+        hull = ss.ConvexHull(self.vertices_)
+        hull_tris = hull.simplices.tolist()
+        hull_vertex_ind = hull_tris[0][0]
+        hull_vertex = self.vertices[hull_vertex_ind]
+        hull_vertex_normal = normals[hull_vertex_ind]
+        v = np.array(hull_vertex).reshape([1,3])
+        n = np.array(hull_vertex_normal)
+        ip = (self.vertices - np.tile(hull_vertex, [self.vertices.shape[0], 1])).dot(n)
+        if ip[0] > 0:
+            normals = [[-n[0], -n[1], -n[2]] for n in normals]
+        self.normals = normals
+
+    def scale_principal_eigenvalues(self, new_evals):
+        self.normalize_vertices()
+
+        pca = sklearn.decomposition.PCA(n_components = 3)
+        pca.fit(self.vertices_)
+
+        evals = pca.explained_variance_
+        if len(new_evals) == 3:
+            self.vertices[:,0] *= new_evals[2]/np.sqrt(evals[2])
+            self.vertices[:,1] *= new_evals[1]/np.sqrt(evals[1])
+            self.vertices[:,2] *= new_evals[0]/np.sqrt(evals[0])
+        elif len(new_evals) == 2:
+            self.vertices[:,1] *= new_evals[1]/np.sqrt(evals[1])
+            self.vertices[:,2] *= new_evals[0]/np.sqrt(evals[0])
+        elif len(new_evals) == 1:
+            self.vertices[:,0] *= new_evals[0]/np.sqrt(evals[0])
+            self.vertices[:,1] *= new_evals[0]/np.sqrt(evals[0])
+            self.vertices[:,2] *= new_evals[0]/np.sqrt(evals[0])
+        self.center_vertices_bb()
+        return evals
 
     def copy(self):
         """Return a copy of the mesh.
@@ -590,7 +653,47 @@ class Mesh3D(object):
         vertex_cloud = PointCloud(self.vertices_.T, frame=T.from_frame)
         vertex_cloud_tf = T * vertex_cloud
         vertices = vertex_cloud_tf.data.T
-        return Mesh3D(np.copy(vertices), np.copy(self.triangles_))
+        return Mesh3D(np.copy(vertices), np.copy(self.triangles))
+
+    def random_points(self, n_points):
+        """Generate uniformly random points on the surface of the mesh.
+
+        Parameters
+        ----------
+        n_points : int
+            The number of random points to generate.
+
+        Returns
+        -------
+        :obj:`numpy.ndarray` of float
+            A n_points by 3 ndarray that contains the sampled 3D points.
+        """
+        probs = self._tri_area_percentages()
+        tri_inds = np.random.choice(range(len(probs)), n_points, p=probs)
+        points = []
+        for tri_ind in tri_inds:
+            tri = self.triangles[tri_ind]
+            points.append(self._rand_point_on_tri(tri))
+        return np.array(points)
+
+    def ray_intersections(self, ray, point, distance):
+        """Returns a list containing the indices of the triangles that
+        are intersected by the given ray emanating from the given point
+        within some distance.
+        """
+        ray = ray / np.linalg.norm(ray)
+        norms = self.tri_normals()
+        tri_point_pairs = []
+        for i, tri in enumerate(self.triangles):
+            if np.dot(ray, norms[i]) == 0.0:
+                continue
+            t = -1 * np.dot((point - self.vertices[tri[0]]), norms[i]) / (np.dot(ray, norms[i]))
+            if (t > 0 and t <= distance):
+                contact_point = point + t * ray
+                tri_verts = [self.vertices[j] for j in tri]
+                if Mesh3D._point_in_tri(tri_verts, contact_point):
+                    tri_point_pairs.append((i, contact_point))
+        return tri_point_pairs
 
     def get_T_surface_obj(self, T_surface_ori_obj):
         """XXX TODO not sure
@@ -956,6 +1059,62 @@ class Mesh3D(object):
         A[:,2] = v3 - self.center_of_mass_
         C = np.linalg.det(A) * A.dot(Mesh3D.C_canonical).dot(A.T)
         return C
+
+    def _area_of_tri(self, tri):
+        """Return the area of the given triangle.
+
+        Parameters
+        ----------
+        tri : :obj:`numpy.ndarray` of int
+            The triangle for which we wish to compute an area.
+
+        Returns
+        -------
+        float
+            The area of the triangle.
+        """
+        verts = [self.vertices[i] for i in tri]
+        ab = verts[1] - verts[0]
+        ac = verts[2] - verts[0]
+        return 0.5 * np.linalg.norm(np.cross(ab, ac))
+
+    def _tri_area_percentages(self):
+        """Return a list of the percent area each triangle contributes to the
+        mesh's surface area.
+
+        Returns
+        -------
+        :obj:`list` of float
+            A list of percentages in [0,1] for each face that represents its
+            total contribution to the area of the mesh.
+        """
+        probs = []
+        area = 0.0
+        for tri in self.triangles:
+            tri_area = self._area_of_tri(tri)
+            probs.append(tri_area)
+            area += tri_area
+        probs = probs / area
+        return probs
+
+    def _rand_point_on_tri(self, tri):
+        """Return a random point on the given triangle.
+
+        Parameters
+        ----------
+        tri : :obj:`numpy.ndarray` of int
+            The triangle for which we wish to compute an area.
+
+        Returns
+        -------
+        :obj:`numpy.ndarray` of float
+            A 3D point on the triangle.
+        """
+        verts = [self.vertices[i] for i in tri]
+        r1 = np.sqrt(np.random.uniform())
+        r2 = np.random.uniform()
+        p = (1-r1)*verts[0] + r1*(1-r2)*verts[1] + r1*r2*verts[2]
+        return p
 
     def _compute_proj_area(self, verts):
         """Projects vertices onto the unit sphere from the center of mass
