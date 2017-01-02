@@ -57,7 +57,7 @@ class Mesh3D(object):
                             [1.0 / 120.0, 1.0 / 120.0, 1.0 / 60.0]])
 
     def __init__(self, vertices, triangles, normals=None,
-                 density=1.0, center_of_mass=None):
+                 density=1.0, center_of_mass=None, uniform_com=False):
         """Construct a 3D triangular mesh.
 
         Parameters
@@ -75,6 +75,8 @@ class Mesh3D(object):
             The density of the mesh.
         center_of_mass : :obj:`numpy.ndarray` of float
             The 3D location of the mesh's center of mass.
+        uniform_com : bool
+            Whether or not to assume a uniform mass density for center of mass comp
         """
         if vertices is not None:
             vertices = np.array(vertices)
@@ -101,7 +103,10 @@ class Mesh3D(object):
         self.centroid_ = self._compute_centroid()
 
         if self.center_of_mass_ is None:
-            self.center_of_mass_ = self.bb_center_
+            if uniform_com:
+                self.center_of_mass_ = self._compute_com_uniform()
+            else:
+                self.center_of_mass_ = self.bb_center_
 
 
     ##################################################################
@@ -695,23 +700,26 @@ class Mesh3D(object):
                     tri_point_pairs.append((i, contact_point))
         return tri_point_pairs
 
-    def get_T_surface_obj(self, T_surface_ori_obj):
-        """XXX TODO not sure
+    def get_T_surface_obj(self, T_surface_ori_obj, delta=0.0):
+        """ Gets the transformation that puts the object resting exactly on
+        the z=delta plane
 
         Parameters
         ----------
         T_surface_ori_obj : :obj:`RigidTransform`
             The RigidTransform by which the mesh is transformed.
+        delta : float
+            Z-coordinate to rest the mesh on
 
         Note
         ----
-        This method only copies the vertices and triangles of the mesh.
+        This method copies the vertices and triangles of the mesh.
         """
         obj_tf = self.transform(T_surface_ori_obj)
         mn, mx = obj_tf.bounding_box()
 
         z=mn[2]
-        x0 = np.array([0,0,-z])
+        x0 = np.array([0,0,-z+delta])
 
         T_surface_obj = RigidTransform(rotation=T_surface_ori_obj.rotation,
                                        translation=x0, from_frame='obj',
@@ -984,7 +992,7 @@ class Mesh3D(object):
             weighted_point_sum = weighted_point_sum + volume * center
             total_volume = total_volume + volume
         center_of_mass = weighted_point_sum / total_volume
-        return np.abs(center_of_mass[0])
+        return center_of_mass[0]
 
     def _compute_centroid(self):
         """Computes the centroid (mean) of the mesh's vertices.
