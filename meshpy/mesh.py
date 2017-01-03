@@ -788,8 +788,13 @@ class Mesh3D(object):
         cvh_mesh.remove_unreferenced_vertices()
         return cvh_mesh
 
-    def stable_poses(self):
+    def stable_poses(self, min_prob=0.0):
         """Computes all valid StablePose objects for the mesh.
+
+        Parameters
+        ----------
+        min_prob : float
+            stable poses that are less likely than this threshold will be discarded
 
         Returns
         -------
@@ -853,7 +858,7 @@ class Mesh3D(object):
         for face, p in prob_map.items():
             x0 = cvh_verts[face[0]]
             r = cvh_mesh._compute_basis([cvh_verts[i] for i in face])
-            if p > 0.0:
+            if p > min_prob:
                 stable_poses.append(sp.StablePose(p, r, x0))
         return stable_poses
 

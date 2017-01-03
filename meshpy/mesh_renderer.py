@@ -9,11 +9,11 @@ import os
 import sys
 import time
 
+import meshrender
+
 from core import RigidTransform
 from core.utils import sph2cart, cart2sph
 from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
-
-import meshrender
 
 class ViewsphereDiscretizer(object):
     """Set of parameters for automatically rendering a set of images from virtual
