@@ -11,7 +11,7 @@ import time
 
 import meshrender
 
-from core import RigidTransform
+from core import Point, RigidTransform
 from core.utils import sph2cart, cart2sph
 from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
 
@@ -337,26 +337,17 @@ class PlanarWorksurfaceDiscretizer(object):
                                 t_obj_camera = camera_center_obj
 
                                 # create final transform
-                                if USE_ALAN:
-                                    T_obj_camera = RigidTransform(R_obj_camera, t_obj_camera,
-                                                                  from_frame='camera',
-                                                                  to_frame='obj')
-                                else:
-                                    T_obj_camera = SimilarityTransform3D(pose=tfx.pose(R_obj_camera, t_obj_camera),
-                                                                         from_frame='camera',
-                                                                         to_frame='obj')                            
+                                T_obj_camera = RigidTransform(R_obj_camera, t_obj_camera,
+                                                              from_frame='camera',
+                                                              to_frame='obj')
+                            
                                 object_to_camera_poses.append(T_obj_camera.inverse())
 
                                 # compute pose without the center offset because we can easily add in the object offset later
                                 t_obj_camera_normalized = camera_center_obj - delta_t
-                                if USE_ALAN:
-                                    T_obj_camera_normalized = RigidTransform(R_obj_camera, t_obj_camera_normalized,
-                                                                             from_frame='camera',
-                                                                             to_frame='obj')
-                                else:
-                                    T_obj_camera_normalized = SimilarityTransform3D(pose=tfx.pose(R_obj_camera, t_obj_camera_normalized),
-                                                                                    from_frame='camera',
-                                                                                    to_frame='obj')                                
+                                T_obj_camera_normalized = RigidTransform(R_obj_camera, t_obj_camera_normalized,
+                                                                         from_frame='camera',
+                                                                         to_frame='obj')
                                 object_to_camera_normalized_poses.append(T_obj_camera_normalized.inverse())
 
                                 # compute new camera center by projecting object 0,0,0 into the camera
@@ -526,8 +517,7 @@ class VirtualCamera(object):
                 d = DepthImage(depth_im, frame='camera')
                 images.append(d.to_color())
         else:
-            logging.warning('Render mode %s not supported. Returning None' %(render_mode))
-            return None
+            raise ValueError('Render mode %s not supported')
 
         # create rendered images
         if stable_pose is not None:
