@@ -1,6 +1,6 @@
 """
 Encapsulates mesh for grasping operations
-Author: Jeff Mahler
+Authors: Jeff Mahler and Matt Matl
 """
 import math
 import Queue

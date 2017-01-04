@@ -5,7 +5,7 @@ Run this file with the following command: python stp_file.py MIN_PROB DIR_PATH
 MIN_PROB -- Minimum Probability of a given pose being realized.
 DIR_PATH -- Path to directory containing .obj files to be converted to .stp files (e.g. ~/obj_folder/)
 
-Author: Nikhil Sharma
+Authors: Nikhil Sharma and Matt Matl
 """
 
 import os

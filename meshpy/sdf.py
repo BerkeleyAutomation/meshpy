@@ -1,6 +1,6 @@
 """
 Definition of SDF Class
-Author: Sahaana Suri & Jeff Mahler
+Author: Sahaana Suri, Jeff Mahler, and Matt Matl
 
 **Currently assumes clean input**
 """
@@ -18,9 +18,6 @@ import string
 import sdf_file as sf
 import time
 
-from nearpy import Engine
-from nearpy.hashes import RandomBinaryProjections
-
 from core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
 
 from sys import version_info
@@ -28,6 +25,8 @@ if version_info[0] != 3:
     range = xrange
 
 class Sdf:
+    """ Abstract class for signed distance fields.
+    """
     __metaclass__ = ABCMeta
 
     ##################################################################
