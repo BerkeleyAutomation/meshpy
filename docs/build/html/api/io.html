@@ -1,0 +1,533 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>File I/O &mdash; meshpy 0.0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="meshpy 0.0.1 documentation" href="../index.html"/>
+        <link rel="next" title="Meshes" href="mesh.html"/>
+        <link rel="prev" title="Installation Instructions" href="../install/install.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> meshpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Installation Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../install/install.html">Installation Instructions</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">File I/O</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#objfile">ObjFile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#offfile">OffFile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sdffile">SdfFile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stableposefile">StablePoseFile</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mesh.html">Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sdf.html">Signed Distance Fields</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">meshpy</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>File I/O</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/api/io.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="file-i-o">
+<h1>File I/O<a class="headerlink" href="#file-i-o" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="objfile">
+<h2>ObjFile<a class="headerlink" href="#objfile" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="meshpy.ObjFile">
+<em class="property">class </em><code class="descclassname">meshpy.</code><code class="descname">ObjFile</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.ObjFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Wavefront .obj file reader and writer.</p>
+<dl class="attribute">
+<dt id="ObjFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#ObjFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .obj file associated with this reader/writer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.ObjFile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.ObjFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and initialize a .obj file reader and writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; The full path to the desired .obj file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If the file extension is not .obj.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="meshpy.ObjFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#meshpy.ObjFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to the .obj file associated with this reader/writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The full path to the .obj file associated with this reader/writer.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.ObjFile.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.ObjFile.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in the .obj file and returns a Mesh3D representation of that mesh.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A Mesh3D created from the data in the .obj file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.ObjFile.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.ObjFile.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a Mesh3D object out to a .obj file format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mesh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code>) &#8211; The Mesh3D object to write to the .obj file.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Does not support material files or texture coordinates.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="offfile">
+<h2>OffFile<a class="headerlink" href="#offfile" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="meshpy.OffFile">
+<em class="property">class </em><code class="descclassname">meshpy.</code><code class="descname">OffFile</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.OffFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A .off file reader and writer.</p>
+<dl class="attribute">
+<dt id="OffFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#OffFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .off file associated with this reader/writer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.OffFile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.OffFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the path to the file to open</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="meshpy.OffFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#meshpy.OffFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to the .off file associated with this reader/writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The full path to the .ff file associated with this reader/writer.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.OffFile.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.OffFile.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in the .off file and returns a Mesh3D representation of that mesh.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A Mesh3D created from the data in the .off file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.OffFile.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>mesh</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.OffFile.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a Mesh3D object out to a .off file format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mesh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code>) &#8211; The Mesh3D object to write to the .obj file.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Does not support material files or texture coordinates.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sdffile">
+<h2>SdfFile<a class="headerlink" href="#sdffile" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="meshpy.SdfFile">
+<em class="property">class </em><code class="descclassname">meshpy.</code><code class="descname">SdfFile</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.SdfFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Signed Distance Field .sdf file reader and writer.</p>
+<dl class="attribute">
+<dt id="SdfFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#SdfFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .sdf or .csv file associated with this reader/writer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.SdfFile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.SdfFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and initialize a .sdf file reader and writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; The full path to the desired .sdf or .csv file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If the file extension is not .sdf of .csv.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="meshpy.SdfFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#meshpy.SdfFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to the file associated with this reader/writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The full path to the file associated with this reader/writer.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.SdfFile.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.SdfFile.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in the SDF file and returns a Sdf object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A Sdf created from the data in the file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">Sdf</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.SdfFile.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>sdf</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.SdfFile.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes an SDF to a file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sdf</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Sdf</span></code>) &#8211; An Sdf object to write out.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is not currently implemented or supported.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="stableposefile">
+<h2>StablePoseFile<a class="headerlink" href="#stableposefile" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="meshpy.StablePoseFile">
+<em class="property">class </em><code class="descclassname">meshpy.</code><code class="descname">StablePoseFile</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.StablePoseFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Stable Pose .stp file reader and writer.</p>
+<dl class="attribute">
+<dt id="StablePoseFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#StablePoseFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .stp file associated with this reader/writer.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.StablePoseFile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.StablePoseFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and initialize a .stp file reader and writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; The full path to the desired .stp file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If the file extension is not .stp.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="meshpy.StablePoseFile.filepath">
+<code class="descname">filepath</code><a class="headerlink" href="#meshpy.StablePoseFile.filepath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the full path to the .stp file associated with this reader/writer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The full path to the .stp file associated with this reader/writer.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.StablePoseFile.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.StablePoseFile.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads in the .stp file and returns a list of StablePose objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>:obj:`list` of</strong> &#8211; A list of StablePose objects read from the .stp file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">obj`StablePose`</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.StablePoseFile.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>stable_poses</em>, <em>min_prob=0</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.StablePoseFile.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes out the stable poses for a mesh with a minimum probability filter.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stable_poses</strong> (<code class="xref py py-obj docutils literal"><span class="pre">list</span></code> of <code class="xref py py-obj docutils literal"><span class="pre">StablePose</span></code>) &#8211; List of stable poses that should be written to the file.</li>
+<li><strong>min_prob</strong> (<em>float</em>) &#8211; The minimum probability for a pose to actually be written to the
+file.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="mesh.html" class="btn btn-neutral float-right" title="Meshes" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../install/install.html" class="btn btn-neutral" title="Installation Instructions" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jeff Mahler.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
