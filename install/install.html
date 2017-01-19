@@ -154,7 +154,8 @@
 <p>The <cite>meshpy</cite> module depends on the Berkeley AutoLab&#8217;s <a class="reference external" href="https://github.com/BerkeleyAutomation/core">core</a> and <a class="reference external" href="https://github.com/BerkeleyAutomation/perception">perception</a> modules,
 which can be installed by following instructions in their respective
 repositories.</p>
-<p>Rendering using <cite>meshpy</cite> also depends on <a class="reference external" href="http://www.mesa3d.org/osmesa.html">OSMesa</a> and <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost.NumPy</a>.</p>
+<p>Rendering using <cite>meshpy</cite> also depends on <a class="reference external" href="http://www.mesa3d.org/osmesa.html">OSMesa</a> and <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost.NumPy</a>, and
+compiling the renderer depends on <a class="reference external" href="https://cmake.org/">CMake</a>.</p>
 <p>Any other dependencies will be installed automatically when <cite>meshpy</cite> is
 installed with <cite>pip</cite>.</p>
 </div>
@@ -179,10 +180,6 @@ installed with <cite>pip</cite>.</p>
 <p>Then to install <cite>meshpy</cite> in your current Python environment, simply
 change directories into the <cite>meshpy</cite> repository and run</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install -e .
-</pre></div>
-</div>
-<p>or</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install -r requirements.txt
 </pre></div>
 </div>
 <p>Alternatively, you can run</p>
