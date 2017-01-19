@@ -28,11 +28,11 @@ You can clone or download our source code from `Github`_. ::
 
 Installation
 ~~~~~~~~~~~~
-Install `OSMesa`_ by running:
+Install `OSMesa`_ by running: ::
 
     $ sudo apt-get install libosmesa6-dev   
 
-Install `Boost.NumPy`_ by cloning the latest stable repo:
+Install `Boost.NumPy`_ by cloning the latest stable repo: ::
 
     $ git clone https://github.com/ndarray/Boost.NumPy.git
 
@@ -59,7 +59,7 @@ to install `meshpy` from anywhere.
 
 To visualize meshes, we highly recommend also installing
 the Berkeley AutoLab's `visualization`_ module, which uses `mayavi`_.
-This can be installed by cloning the repo:
+This can be installed by cloning the repo: ::
 
     $ git clone git@github.com:BerkeleyAutomation/visualization.git
 
