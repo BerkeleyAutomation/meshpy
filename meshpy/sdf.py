@@ -108,7 +108,7 @@ class Sdf:
     ##################################################################
     @abstractmethod
     def transform(self, tf):
-        """Returns a new SDF transformed by similarity tf |tf| TODO
+        """Returns a new SDF transformed by similarity tf.
         """
         pass
 
@@ -547,8 +547,8 @@ class Sdf3D(Sdf):
         return surface_points, surface_vals
 
     def transform(self, delta_T, detailed = False):
-        """
-        Transform the grid by pose T and scale with canonical reference frame at the SDF center with axis alignment
+        """Transform the grid by pose T and scale with canonical reference
+        frame at the SDF center with axis alignment.
 
         Parameters
         ----------

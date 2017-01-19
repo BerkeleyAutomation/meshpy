@@ -4,10 +4,11 @@ Installation Instructions
 Dependencies
 ~~~~~~~~~~~~
 The `meshpy` module depends on the Berkeley AutoLab's `core`_ and `perception`_ modules,
-which can be installed using `pip install` on the source repo.
+which can be installed by following instructions in their respective
+repositories.
 
-.. _core: https://github.com/mmatl/core
-.. _perception: https://github.com/mmatl/perception
+.. _core: https://github.com/BerkeleyAutomation/core
+.. _perception: https://github.com/BerkeleyAutomation/perception
 
 Rendering using `meshpy` also depends on `OSMesa`_ and `Boost.NumPy`_.
 
@@ -21,9 +22,9 @@ Cloning the Repository
 ~~~~~~~~~~~~~~~~~~~~~~
 You can clone or download our source code from `Github`_. ::
 
-    $ git clone git@github.com:mmatl/meshpy.git
+    $ git clone git@github.com:BerkeleyAutomation/meshpy.git
 
-.. _Github: https://github.com/mmatl/meshpy
+.. _Github: https://github.com/BerkeleyAutomation/meshpy
 
 Installation
 ~~~~~~~~~~~~
@@ -35,11 +36,11 @@ Install `Boost.NumPy`_ by cloning the latest stable repo:
 
     $ git clone https://github.com/ndarray/Boost.NumPy.git
 
-and following the `installation instructions`_.
+and following `Boost-Numpy's installation instructions`_.
 
 .. _OSMesa: http://www.mesa3d.org/osmesa.html
 .. _Boost.NumPy: https://github.com/ndarray/Boost.NumPy
-.. _installation instructions: https://github.com/ndarray/Boost.NumPy
+.. _Boost-Numpy's installation instructions: https://github.com/ndarray/Boost.NumPy
 
 Then to install `meshpy` in your current Python environment, simply
 change directories into the `meshpy` repository and run ::
@@ -56,16 +57,17 @@ Alternatively, you can run ::
 
 to install `meshpy` from anywhere.
 
-To visualize meshes, we highly recommend also installing the Berkeley AutoLab's `visualization`_ module, which uses `mayavi`_.
+To visualize meshes, we highly recommend also installing
+the Berkeley AutoLab's `visualization`_ module, which uses `mayavi`_.
 This can be installed by cloning the repo:
 
-    $ git clone git@github.com:jeffmahler/visualization.git
+    $ git clone git@github.com:BerkeleyAutomation/visualization.git
 
 and following `installation instructions`_.
 
-.. _visualization: https://github.com/jeffmahler/visualization
+.. _visualization: https://github.com/BerkeleyAutomation/visualization
 .. _mayavi: http://docs.enthought.com/mayavi/mayavi/
-.. _installation instructions: https://jeffmahler.github.io/visualization
+.. _installation instructions: https://BerkeleyAutomation.github.io/visualization
 
 Testing
 ~~~~~~~
@@ -86,7 +88,7 @@ To install the dependencies required, simply run ::
 
     $ pip install -r docs_requirements.txt
 
-Then, go to the `docs` directory and run `make` with the appropriate target.
+Then, go to the `docs` directory and run ``make`` with the appropriate target.
 For example, ::
 
     $ cd docs/
@@ -95,3 +97,14 @@ For example, ::
 will generate a set of web pages. Any documentation files
 generated in this manner can be found in `docs/build`.
 
+Deploying Documentation
+~~~~~~~~~~~~~~~~~~~~~~~
+To deploy documentation to the Github Pages site for the repository,
+simply push any changes to the documentation source to master
+and then run ::
+
+    $ . gh_deploy.sh
+
+from the `docs` folder. This script will automatically checkout the
+``gh-pages`` branch, build the documentation from source, and push it
+to Github.
