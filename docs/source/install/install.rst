@@ -10,10 +10,12 @@ repositories.
 .. _core: https://github.com/BerkeleyAutomation/core
 .. _perception: https://github.com/BerkeleyAutomation/perception
 
-Rendering using `meshpy` also depends on `OSMesa`_ and `Boost.NumPy`_.
+Rendering using `meshpy` also depends on `OSMesa`_ and `Boost.NumPy`_, and
+compiling the renderer depends on `CMake`_.
 
 .. _OSMesa: http://www.mesa3d.org/osmesa.html
 .. _Boost.NumPy: https://github.com/ndarray/Boost.NumPy
+.. _CMake: https://cmake.org/
 
 Any other dependencies will be installed automatically when `meshpy` is
 installed with `pip`.
@@ -46,10 +48,6 @@ Then to install `meshpy` in your current Python environment, simply
 change directories into the `meshpy` repository and run ::
 
     $ pip install -e .
-
-or ::
-
-    $ pip install -r requirements.txt
 
 Alternatively, you can run ::
 
