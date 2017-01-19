@@ -5,7 +5,7 @@ Author: Jeff Mahler
 import os
 import mesh
 
-class ObjFile:
+class ObjFile(object):
     """
     A Wavefront .obj file reader and writer.
 

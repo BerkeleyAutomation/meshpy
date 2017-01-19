@@ -367,6 +367,12 @@ class PlanarWorksurfaceDiscretizer(object):
             radius += radius_inc
         return object_to_camera_poses, object_to_camera_normalized_poses, camera_shifted_intrinsics
 
+class SceneObject(object):
+    """ Struct to encapsulate objects added to a scene """
+    def __init__(self, mesh, T_mesh_world):
+        self.mesh = mesh
+        self.T_mesh_world = T_mesh_world
+
 class VirtualCamera(object):
     """A virtualized camera for rendering virtual color and depth images of meshes.
 
@@ -388,6 +394,29 @@ class VirtualCamera(object):
         if not isinstance(camera_intr, CameraIntrinsics):
             raise ValueError('Must provide camera intrinsics as a CameraIntrinsics object')
         self._camera_intr = camera_intr
+        self._scene = {} 
+
+    def add_to_scene(self, name, scene_object):
+        """ Add an object to the scene.
+
+        Parameters
+        ---------
+        name : :obj:`str`
+            name of object in the scene
+        scene_object : :obj:`SceneObject`
+            object to add to the scene
+        """
+        self._scene[name] = scene_object
+
+    def remove_from_scene(self, name):
+        """ Remove an object to a from the scene.
+
+        Parameters
+        ---------
+        name : :obj:`str`
+            name of object to remove
+        """
+        self._scene[name] = None
 
     def images(self, mesh, object_to_camera_poses, debug=False):
         """Render images of the given mesh at the list of object to camera poses.
@@ -414,8 +443,8 @@ class VirtualCamera(object):
             single float that represents the depth of the image.
         """
         # get mesh spec as numpy arrays
-        vertex_arr = np.array(mesh.vertices)
-        tri_arr = np.array(mesh.triangles).astype(np.uint32)
+        vertex_arr = mesh.vertices
+        tri_arr = mesh.triangles.astype(np.int32)
 
         # generate set of projection matrices
         projections = []
@@ -490,11 +519,13 @@ class VirtualCamera(object):
             A list of ObjectRender objects generated from the given parameters.
         """
         # pre-multiply the stable pose
+        world_to_camera_poses = [T_obj_camera.as_frames('obj', 'camera') for T_obj_camera in object_to_camera_poses]
         if stable_pose is not None:
+            t_obj_stp = np.array([0,0,-stable_pose.r.dot(stable_pose.x0)[2]])
             T_obj_stp = RigidTransform(rotation=stable_pose.r,
-                                        translation=np.zeros(3),
-                                        from_frame='obj',
-                                        to_frame='stp')
+                                       translation=t_obj_stp,
+                                       from_frame='obj',
+                                       to_frame='stp')            
             stp_to_camera_poses = copy.copy(object_to_camera_poses)
             object_to_camera_poses = []
             for T_stp_camera in stp_to_camera_poses:
@@ -507,25 +538,49 @@ class VirtualCamera(object):
         # convert to image wrapper classes
         images = []
         if render_mode == RenderMode.SEGMASK:
+            # wrap binary images
             for binary_im in binary_ims:
                 images.append(BinaryImage(binary_im[:,:,0], frame=self._camera_intr.frame))
+
         elif render_mode == RenderMode.DEPTH:
+            # render depth image
             for depth_im in depth_ims:
                 images.append(DepthImage(depth_im, frame=self._camera_intr.frame))
+
+        elif render_mode == RenderMode.DEPTH_SCENE:
+            # create empty depth images
+            for depth_im in depth_ims:
+                images.append(DepthImage(depth_im, frame=self._camera_intr.frame))
+
+            # render images of scene objects
+            depth_scene_ims = {}
+            for name, scene_obj in self._scene.iteritems():
+                scene_object_to_camera_poses = []
+                for world_to_camera_pose in world_to_camera_poses:
+                    scene_object_to_camera_poses.append(world_to_camera_pose * scene_obj.T_mesh_world)
+                depth_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.DEPTH)
+
+            # combine with scene images
+            for i in range(len(images)):
+                for j, name in enumerate(depth_scene_ims.keys()):
+                    images[i] = images[i].combine_with(depth_scene_ims[name][i].image)
+
         elif render_mode == RenderMode.SCALED_DEPTH:
+            # convert to color image
             for depth_im in depth_ims:
                 d = DepthImage(depth_im, frame='camera')
                 images.append(d.to_color())
         else:
             raise ValueError('Render mode %s not supported')
 
-        # create rendered images
+        # create object renders
         if stable_pose is not None:
             object_to_camera_poses = copy.copy(stp_to_camera_poses)
         rendered_images = []
         for image, T_obj_camera in zip(images, object_to_camera_poses):
             T_camera_obj = T_obj_camera.inverse()
             rendered_images.append(ObjectRender(image, T_camera_obj))
+
         return rendered_images
 
     def wrapped_images_viewsphere(self, mesh, vs_disc, render_mode, stable_pose=None):
