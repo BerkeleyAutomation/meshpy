@@ -147,6 +147,65 @@
 worksurface when dropped with an initial orientation uniformly at random.</p>
 <div class="section" id="stablepose">
 <h2>StablePose<a class="headerlink" href="#stablepose" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="meshpy.StablePose">
+<em class="property">class </em><code class="descclassname">meshpy.</code><code class="descname">StablePose</code><span class="sig-paren">(</span><em>p</em>, <em>r</em>, <em>x0</em>, <em>stp_id=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.StablePose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A representation of a mesh&#8217;s stable pose.</p>
+<dl class="attribute">
+<dt id="StablePose.p">
+<code class="descname">p</code><a class="headerlink" href="#StablePose.p" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>float</em> &#8211; Probability associated with this stable pose.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="StablePose.r">
+<code class="descname">r</code><a class="headerlink" href="#StablePose.r" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of :obj`numpy.ndarray` of float &#8211; 3x3 rotation matrix that rotates the mesh into the stable pose from
+standardized coordinates.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="StablePose.x0">
+<code class="descname">x0</code><a class="headerlink" href="#StablePose.x0" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; 3D point in the mesh that is resting on the table.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="StablePose.stp_id">
+<code class="descname">stp_id</code><a class="headerlink" href="#StablePose.stp_id" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; A string identifier for the stable pose</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="StablePose.T_obj_table">
+<code class="descname">T_obj_table</code><a class="headerlink" href="#StablePose.T_obj_table" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">RigidTransform</span></code> &#8211; A RigidTransform representation of the pose&#8217;s rotation matrix.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.StablePose.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>p</em>, <em>r</em>, <em>x0</em>, <em>stp_id=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.StablePose.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new stable pose object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>p</strong> (<em>float</em>) &#8211; Probability associated with this stable pose.</li>
+<li><strong>r</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of :obj`numpy.ndarray` of float) &#8211; 3x3 rotation matrix that rotates the mesh into the stable pose from
+standardized coordinates.</li>
+<li><strong>x0</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) &#8211; 3D point in the mesh that is resting on the table.</li>
+<li><strong>stp_id</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; A string identifier for the stable pose</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 </div>
 
