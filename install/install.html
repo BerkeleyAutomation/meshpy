@@ -92,6 +92,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#building-documentation">Building Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deploying-documentation">Deploying Documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -136,7 +137,7 @@
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../_sources/install/install.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/install/install.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -150,16 +151,17 @@
 <h1>Installation Instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>The <cite>meshpy</cite> module depends on the Berkeley AutoLab&#8217;s <a class="reference external" href="https://github.com/mmatl/core">core</a> and <a class="reference external" href="https://github.com/mmatl/perception">perception</a> modules,
-which can be installed using <cite>pip install</cite> on the source repo.</p>
+<p>The <cite>meshpy</cite> module depends on the Berkeley AutoLab&#8217;s <a class="reference external" href="https://github.com/BerkeleyAutomation/core">core</a> and <a class="reference external" href="https://github.com/BerkeleyAutomation/perception">perception</a> modules,
+which can be installed by following instructions in their respective
+repositories.</p>
 <p>Rendering using <cite>meshpy</cite> also depends on <a class="reference external" href="http://www.mesa3d.org/osmesa.html">OSMesa</a> and <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost.NumPy</a>.</p>
 <p>Any other dependencies will be installed automatically when <cite>meshpy</cite> is
 installed with <cite>pip</cite>.</p>
 </div>
 <div class="section" id="cloning-the-repository">
 <h2>Cloning the Repository<a class="headerlink" href="#cloning-the-repository" title="Permalink to this headline">¶</a></h2>
-<p>You can clone or download our source code from <a class="reference external" href="https://github.com/mmatl/meshpy">Github</a>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone git@github.com:mmatl/meshpy.git
+<p>You can clone or download our source code from <a class="reference external" href="https://github.com/BerkeleyAutomation/meshpy">Github</a>.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone git@github.com:BerkeleyAutomation/meshpy.git
 </pre></div>
 </div>
 </div>
@@ -171,7 +173,7 @@ installed with <cite>pip</cite>.</p>
 <p>Install <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost.NumPy</a> by cloning the latest stable repo:</p>
 <blockquote>
 <div>$ git clone <a class="reference external" href="https://github.com/ndarray/Boost.NumPy.git">https://github.com/ndarray/Boost.NumPy.git</a></div></blockquote>
-<p>and following the <a href="#id5"><span class="problematic" id="id6">`installation instructions`_</span></a>.</p>
+<p>and following <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost-Numpy&#8217;s installation instructions</a>.</p>
 <p>Then to install <cite>meshpy</cite> in your current Python environment, simply
 change directories into the <cite>meshpy</cite> repository and run</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install -e .
@@ -186,11 +188,12 @@ change directories into the <cite>meshpy</cite> repository and run</p>
 </pre></div>
 </div>
 <p>to install <cite>meshpy</cite> from anywhere.</p>
-<p>To visualize meshes, we highly recommend also installing the Berkeley AutoLab&#8217;s <a class="reference external" href="https://github.com/jeffmahler/visualization">visualization</a> module, which uses <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/">mayavi</a>.
+<p>To visualize meshes, we highly recommend also installing
+the Berkeley AutoLab&#8217;s <a class="reference external" href="https://github.com/BerkeleyAutomation/visualization">visualization</a> module, which uses <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/">mayavi</a>.
 This can be installed by cloning the repo:</p>
 <blockquote>
-<div>$ git clone <a class="reference external" href="mailto:git&#37;&#52;&#48;github&#46;com">git<span>&#64;</span>github<span>&#46;</span>com</a>:jeffmahler/visualization.git</div></blockquote>
-<p>and following <a href="#id7"><span class="problematic" id="id8">`installation instructions`_</span></a>.</p>
+<div>$ git clone <a class="reference external" href="mailto:git&#37;&#52;&#48;github&#46;com">git<span>&#64;</span>github<span>&#46;</span>com</a>:BerkeleyAutomation/visualization.git</div></blockquote>
+<p>and following <a class="reference external" href="https://BerkeleyAutomation.github.io/visualization">installation instructions</a>.</p>
 </div>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
@@ -208,7 +211,7 @@ specifically, <a class="reference external" href="http://www.sphinx-doc.org/en/1
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install -r docs_requirements.txt
 </pre></div>
 </div>
-<p>Then, go to the <cite>docs</cite> directory and run <cite>make</cite> with the appropriate target.
+<p>Then, go to the <cite>docs</cite> directory and run <code class="docutils literal"><span class="pre">make</span></code> with the appropriate target.
 For example,</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ cd docs/
 $ make html
@@ -216,6 +219,18 @@ $ make html
 </div>
 <p>will generate a set of web pages. Any documentation files
 generated in this manner can be found in <cite>docs/build</cite>.</p>
+</div>
+<div class="section" id="deploying-documentation">
+<h2>Deploying Documentation<a class="headerlink" href="#deploying-documentation" title="Permalink to this headline">¶</a></h2>
+<p>To deploy documentation to the Github Pages site for the repository,
+simply push any changes to the documentation source to master
+and then run</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ . gh_deploy.sh
+</pre></div>
+</div>
+<p>from the <cite>docs</cite> folder. This script will automatically checkout the
+<code class="docutils literal"><span class="pre">gh-pages</span></code> branch, build the documentation from source, and push it
+to Github.</p>
 </div>
 </div>
 
