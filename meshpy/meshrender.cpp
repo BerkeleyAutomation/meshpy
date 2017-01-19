@@ -33,6 +33,8 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   boost::python::list color_ims;
   boost::python::list depth_ims;
   void *buffer;
+  unsigned char* color_result = NULL;
+  float* depth_result = NULL;
 
   // parse input data
   int num_projections = boost::python::len(proj_matrices);
@@ -44,6 +46,8 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   bool tris_readbuf_success = !PyObject_AsReadBuffer(tris.ptr(), &tris_raw_buffer, &tris_buflen);
   const double* verts_buffer = reinterpret_cast<const double*>(verts_raw_buffer);
   const unsigned int* tris_buffer = reinterpret_cast<const unsigned int*>(tris_raw_buffer);
+  double final_matrix[16];
+  unsigned char colorBytes[3] = {255, 255, 255}; // all white
 
   unsigned int num_verts = verts_buflen / (3 * sizeof(double));
   unsigned int num_tris = tris_buflen / (3 * sizeof(unsigned int));
@@ -92,7 +96,6 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     }
 
     // create projection
-    double final_matrix[16];
     double inv_width_scale  = 1.0 / (im_width * scale);
     double inv_height_scale = 1.0 / (im_height * scale);
     double inv_width_scale_1 = inv_width_scale - 1.0;
@@ -131,7 +134,6 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     // render mesh
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, im_width, im_height);
-    unsigned char colorBytes[3] = {255, 255, 255}; // all white
     for (unsigned int i = 0; i < num_tris; ++i) {
       glColor3ubv(colorBytes);
       glBegin(GL_POLYGON);
@@ -154,7 +156,8 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     GLboolean succeeded;
     unsigned char* p_color_buffer;
     succeeded = OSMesaGetColorBuffer(ctx, &out_width, &out_height, &color_type, (void**)&p_color_buffer);
-    unsigned char* color_result = new unsigned char[3 * out_width * out_height];
+    if (color_result == NULL)
+      color_result = new unsigned char[3 * out_width * out_height];
     for (i = 0; i < out_width; i++) {
       for (j = 0; j < out_height; j++) {
         int di = i + j * out_width; // index in color buffer
@@ -168,7 +171,8 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     // pull depth buffer and flip y axis
     unsigned short* p_depth_buffer;
     succeeded = OSMesaGetDepthBuffer(ctx, &out_width, &out_height, &bytes_per_depth, (void**)&p_depth_buffer);
-    float* depth_result = new float[out_width * out_height];
+    if (depth_result == NULL)
+      depth_result = new float[out_width * out_height];
     for(i = 0; i < out_width; i++){
       for(j = 0; j < out_height; j++){
         int di = i + j * out_width; // index in depth buffer
@@ -190,7 +194,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
                                                                                         color_shape[2]*sizeof(unsigned char),
                                                                                         sizeof(unsigned char)),
                                                               boost::python::object());
-    color_ims.append(color_arr);
+    color_ims.append(color_arr.copy());
 
     // append ndarray depth image to list
     boost::python::tuple depth_shape = boost::python::make_tuple(im_height, im_width);
@@ -199,17 +203,24 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
                                                               boost::python::make_tuple(depth_shape[1]*sizeof(float),
                                                                                         sizeof(float)),
                                                               boost::python::object());
-    depth_ims.append(depth_arr);
+    depth_ims.append(depth_arr.copy());
   }
   
   // free the image buffer
   free( buffer );
-  
+
   // destroy the context
   OSMesaDestroyContext( ctx );
 
   //return depth_ims;
-  return boost::python::make_tuple(color_ims, depth_ims);
+  boost::python::tuple ret_tuple = boost::python::make_tuple(color_ims, depth_ims);
+
+  if (color_result != NULL)
+    delete [] color_result;
+  if (depth_result != NULL)
+    delete [] depth_result;
+
+  return ret_tuple;
 }
 
 // Test function for multiplying an array by a scalar
