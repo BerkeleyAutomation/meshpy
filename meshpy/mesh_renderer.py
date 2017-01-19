@@ -584,7 +584,8 @@ class VirtualCamera(object):
         return rendered_images
 
     def wrapped_images_viewsphere(self, mesh, vs_disc, render_mode, stable_pose=None):
-        """ Create ObjectRender objects of the given mesh around a viewsphere.
+        """Create ObjectRender objects of the given mesh around a viewsphere.
+
         Parameters
         ----------
         mesh : :obj:`Mesh3D`
