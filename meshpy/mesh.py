@@ -569,16 +569,16 @@ class Mesh3D(object):
 
         evals = pca.explained_variance_
         if len(new_evals) == 3:
-            self.vertices[:,0] *= new_evals[2]/np.sqrt(evals[2])
-            self.vertices[:,1] *= new_evals[1]/np.sqrt(evals[1])
-            self.vertices[:,2] *= new_evals[0]/np.sqrt(evals[0])
+            self.vertices[:,0] *= np.sqrt(evals[2])
+            self.vertices[:,1] *= np.sqrt(evals[1])
+            self.vertices[:,2] *= np.sqrt(evals[0])
         elif len(new_evals) == 2:
-            self.vertices[:,1] *= new_evals[1]/np.sqrt(evals[1])
-            self.vertices[:,2] *= new_evals[0]/np.sqrt(evals[0])
+            self.vertices[:,1] *= np.sqrt(evals[1])
+            self.vertices[:,2] *= np.sqrt(evals[0])
         elif len(new_evals) == 1:
-            self.vertices[:,0] *= new_evals[0]/np.sqrt(evals[0])
-            self.vertices[:,1] *= new_evals[0]/np.sqrt(evals[0])
-            self.vertices[:,2] *= new_evals[0]/np.sqrt(evals[0])
+            self.vertices[:,0] *= np.sqrt(evals[0])
+            self.vertices[:,1] *= np.sqrt(evals[0])
+            self.vertices[:,2] *= np.sqrt(evals[0])
         self.center_vertices_bb()
         return evals
 
