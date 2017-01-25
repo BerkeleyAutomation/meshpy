@@ -101,6 +101,7 @@ class Mesh3D(object):
         self.inertia_ = None
         self.bb_center_ = self._compute_bb_center() 
         self.centroid_ = self._compute_centroid()
+        self.surface_area_ = None
 
         if self.center_of_mass_ is None:
             if uniform_com:
@@ -129,6 +130,8 @@ class Mesh3D(object):
         self.vertices_ = np.array(v)
         self.mass_ = None
         self.inertia_ = None
+        self.normals_ = None
+        self.surface_area_ = None
         self.bb_center_ = self._compute_bb_center()
         self.centroid_ = self._compute_centroid()
 
@@ -145,6 +148,7 @@ class Mesh3D(object):
         self.triangles_ = np.array(t)
         self.mass_ = None
         self.inertia_ = None
+        self.surface_area_ = None
 
     @property
     def normals(self):
@@ -377,11 +381,13 @@ class Mesh3D(object):
         float
             The surface area of the mesh.
         """
-        area = 0.0
-        for tri in self.triangles:
-            tri_area = self._area_of_tri(tri)
-            area += tri_area
-        return area
+        if self.surface_area_ is None:
+            area = 0.0
+            for tri in self.triangles:
+                tri_area = self._area_of_tri(tri)
+                area += tri_area
+            self.surface_area_ = area
+        return self.surface_area_
 
     def total_volume(self):
         """Return the total volume of the mesh.
@@ -559,7 +565,8 @@ class Mesh3D(object):
         ip = (self.vertices - np.tile(hull_vertex, [self.vertices.shape[0], 1])).dot(n)
         if ip[0] > 0:
             normals = [[-n[0], -n[1], -n[2]] for n in normals]
-        self.normals = normals
+        self.normals = np.array(normals)
+
 
     def scale_principal_eigenvalues(self, new_evals):
         self.normalize_vertices()
@@ -766,7 +773,7 @@ class Mesh3D(object):
 
         # Compute scale factor and rescale vertices
         scale_factor = scale / relative_scale
-        self.vertices_ = scale_factor * self.vertices_
+        self.vertices = scale_factor * self.vertices
 
     def rescale(self, scale_factor):
         """Rescales the vertex coordinates by scale_factor.
@@ -776,7 +783,7 @@ class Mesh3D(object):
         scale_factor : float
             The desired scale factor for the mesh's vertices.
         """
-        self.vertices = scale_factor * self.vertices_
+        self.vertices = scale_factor * self.vertices
 
     def convex_hull(self):
         """Return a 3D mesh that represents the convex hull of the mesh.
