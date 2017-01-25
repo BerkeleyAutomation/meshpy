@@ -8,21 +8,12 @@ from abc import ABCMeta, abstractmethod
 import logging
 import numpy as np
 from numbers import Number
-import IPython
-from PIL import Image
-import scipy.io
-import scipy.ndimage
-import random
-import string
 
-import sdf_file as sf
 import time
 
 from core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
 
 from sys import version_info
-
-import matplotlib.pyplot as plt
 
 if version_info[0] != 3:
     range = xrange
@@ -659,29 +650,6 @@ class Sdf3D(Sdf):
             points_grid = PointCloud(x_grid.astype(np.float32), frame='grid')
         x_sdf = self.T_grid_sdf_ * points_grid
         return x_sdf.data
-
-    def scatter(self):
-        """
-        Plots the SDF as a matplotlib 3D scatter plot, and displays the figure
-        Params: -
-        Returns: -
-        """
-        ax = plt.gca(projection = '3d')
-
-        # surface points
-        surface_points, surface_vals = self.surface_points()
-        x = surface_points[:,0]
-        y = surface_points[:,1]
-        z = surface_points[:,2]
-
-        # scatter the surface points
-        ax.scatter(x, y, z, cmap="Blues")
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        ax.set_xlim3d(0, self.dims_[0])
-        ax.set_ylim3d(0, self.dims_[1])
-        ax.set_zlim3d(0, self.dims_[2])
 
     @staticmethod
     def find_zero_crossing_linear(x1, y1, x2, y2):
