@@ -182,6 +182,20 @@ class Mesh3D(object):
         self.center_of_mass_ = com
         self.inertia_ = None
 
+    @property
+    def num_vertices(self):
+        """ :obj:`int`:
+        The number of total vertices
+        """
+        return self.vertices.shape[0]
+
+    @property
+    def num_triangles(self):
+        """ :obj:`int`:
+        The number of total triangles
+        """
+        return self.triangles.shape[0]
+
     #=============================================
     # Read-Only Properties
     #=============================================
@@ -861,6 +875,37 @@ class Mesh3D(object):
             if p > min_prob:
                 stable_poses.append(sp.StablePose(p, r, x0))
         return stable_poses
+
+    def merge(self, other_mesh):
+        """ Combines this mesh with another mesh.
+        
+        Parameters
+        ----------
+        other_mesh : :obj:`Mesh3D`
+            the mesh to combine with
+
+        Returns
+        -------
+        :obj:`Mesh3D`
+            merged mesh
+        """
+        total_vertices = self.num_vertices + other_mesh.num_vertices
+        total_triangles = self.num_triangles + other_mesh.num_triangles
+        combined_vertices = np.zeros([total_vertices, 3])
+        combined_triangles = np.zeros([total_triangles, 3])
+
+        combined_vertices[:self.num_vertices, :] = self.vertices
+        combined_vertices[self.num_vertices:, :] = other_mesh.vertices
+
+        combined_triangles[:self.num_triangles, :] = self.triangles
+        combined_triangles[self.num_triangles:, :] = other_mesh.triangles + self.num_vertices
+
+        combined_normals = None
+        if self.normals is not None and other_mesh.normals is not None:
+            combined_normals = np.zeros([total_vertices, 3])
+            combined_normals[:self.num_vertices, :] = self.normals
+            combined_normals[self.num_vertices:, :] = other_mesh.normals
+        return Mesh3D(combined_vertices, combined_triangles, combined_normals)
 
     def visualize(self, color=(0.5, 0.5, 0.5), style='surface', opacity=1.0):
         """Plots visualization of mesh using MayaVI.
