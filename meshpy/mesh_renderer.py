@@ -9,7 +9,10 @@ import os
 import sys
 import time
 
-import meshrender
+try:
+    import meshrender
+except:
+    pass
 
 from core import Point, RigidTransform
 from core.utils import sph2cart, cart2sph
