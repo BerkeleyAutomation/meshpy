@@ -11,7 +11,7 @@ import numpy as np
 import scipy.spatial as ss
 import sklearn.decomposition
 
-from core import RigidTransform, PointCloud
+from core import RigidTransform, Point, PointCloud
 
 import obj_file
 import stable_pose as sp
@@ -672,7 +672,9 @@ class Mesh3D(object):
         vertex_cloud = PointCloud(self.vertices_.T, frame=T.from_frame)
         vertex_cloud_tf = T * vertex_cloud
         vertices = vertex_cloud_tf.data.T
-        return Mesh3D(np.copy(vertices), np.copy(self.triangles))
+        com = Point(self.center_of_mass_, frame=T.from_frame)
+        com_tf = T * com
+        return Mesh3D(np.copy(vertices), np.copy(self.triangles), center_of_mass=com_tf.data)
 
     def random_points(self, n_points):
         """Generate uniformly random points on the surface of the mesh.
