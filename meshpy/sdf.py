@@ -691,6 +691,7 @@ class Sdf3D(Sdf):
             w = np.linalg.solve(X, y_vec)
         except np.linalg.LinAlgError:
             logging.error('Singular matrix. Probably a bug')
+            return None
 
         # get positive roots
         possible_t = np.roots(w)
