@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
-GH_PAGES_SOURCES = docs meshpy
+GH_PAGES_SOURCES = docs meshpy CMakeLists.txt install_meshrender.sh
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -59,6 +59,7 @@ gh-pages:
 	git rm -rf . && git clean -fxd && \
 	git checkout master $(GH_PAGES_SOURCES) && \
 	git reset HEAD && \
+	sh install_meshrender.sh && \
 	cd docs && \
 	make html && \
 	cd .. && \

@@ -3,22 +3,16 @@ Random variables for sampling camera poses
 Author: Jeff Mahler
 """
 import copy
-import gc
 import logging
+
 import numpy as np
-import os
-import sys
-import time
-
-import IPython
-
 import scipy.stats as ss
 
 from core import Point, RigidTransform, RandomVariable
 from core.utils import sph2cart, cart2sph
 from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
 
-from meshpy import VirtualCamera, SceneObject
+from mesh_renderer import VirtualCamera, SceneObject
 
 class CameraSample(object):
     """ Struct to encapsulate the results of sampling a camera and its pose. """

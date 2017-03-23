@@ -10,10 +10,12 @@ repositories.
 .. _core: https://github.com/BerkeleyAutomation/core
 .. _perception: https://github.com/BerkeleyAutomation/perception
 
-Rendering using `meshpy` also depends on `OSMesa`_ and `Boost.NumPy`_.
+Rendering using `meshpy` also depends on `OSMesa`_ and `Boost.NumPy`_, and
+compiling the renderer depends on `CMake`_.
 
 .. _OSMesa: http://www.mesa3d.org/osmesa.html
 .. _Boost.NumPy: https://github.com/ndarray/Boost.NumPy
+.. _CMake: https://cmake.org/
 
 Any other dependencies will be installed automatically when `meshpy` is
 installed with `pip`.
@@ -28,11 +30,11 @@ You can clone or download our source code from `Github`_. ::
 
 Installation
 ~~~~~~~~~~~~
-Install `OSMesa`_ by running:
+Install `OSMesa`_ by running: ::
 
     $ sudo apt-get install libosmesa6-dev   
 
-Install `Boost.NumPy`_ by cloning the latest stable repo:
+Install `Boost.NumPy`_ by cloning the latest stable repo: ::
 
     $ git clone https://github.com/ndarray/Boost.NumPy.git
 
@@ -47,10 +49,6 @@ change directories into the `meshpy` repository and run ::
 
     $ pip install -e .
 
-or ::
-
-    $ pip install -r requirements.txt
-
 Alternatively, you can run ::
 
     $ pip install /path/to/meshpy
@@ -59,7 +57,7 @@ to install `meshpy` from anywhere.
 
 To visualize meshes, we highly recommend also installing
 the Berkeley AutoLab's `visualization`_ module, which uses `mayavi`_.
-This can be installed by cloning the repo:
+This can be installed by cloning the repo: ::
 
     $ git clone git@github.com:BerkeleyAutomation/visualization.git
 

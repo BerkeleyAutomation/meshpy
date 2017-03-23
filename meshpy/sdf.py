@@ -8,19 +8,13 @@ from abc import ABCMeta, abstractmethod
 import logging
 import numpy as np
 from numbers import Number
-import IPython
-from PIL import Image
-import scipy.io
-import scipy.ndimage
-import random
-import string
 
-import sdf_file as sf
 import time
 
 from core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
 
 from sys import version_info
+
 if version_info[0] != 3:
     range = xrange
 
