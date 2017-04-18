@@ -658,7 +658,7 @@ class Mesh3D(object):
         vertex_cloud = PointCloud(self.vertices_.T, frame=T.from_frame)
         vertex_cloud_tf = T * vertex_cloud
         vertices = vertex_cloud_tf.data.T
-        return Mesh3D(np.copy(vertices), np.copy(self.triangles))
+        return Mesh3D(vertices.copy(), self.triangles.copy())
 
     def random_points(self, n_points):
         """Generate uniformly random points on the surface of the mesh.

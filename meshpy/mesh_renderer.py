@@ -414,8 +414,8 @@ class VirtualCamera(object):
             single float that represents the depth of the image.
         """
         # get mesh spec as numpy arrays
-        vertex_arr = np.array(mesh.vertices)
-        tri_arr = np.array(mesh.triangles).astype(np.uint32)
+        vertex_arr = mesh.vertices
+        tri_arr = mesh.triangles.astype(np.uint32)
 
         # generate set of projection matrices
         projections = []
