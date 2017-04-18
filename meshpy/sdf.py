@@ -8,19 +8,13 @@ from abc import ABCMeta, abstractmethod
 import logging
 import numpy as np
 from numbers import Number
-import IPython
-from PIL import Image
-import scipy.io
-import scipy.ndimage
-import random
-import string
 
-import sdf_file as sf
 import time
 
 from core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
 
 from sys import version_info
+
 if version_info[0] != 3:
     range = xrange
 
@@ -108,7 +102,7 @@ class Sdf:
     ##################################################################
     @abstractmethod
     def transform(self, tf):
-        """Returns a new SDF transformed by similarity tf |tf| TODO
+        """Returns a new SDF transformed by similarity tf.
         """
         pass
 
@@ -547,8 +541,8 @@ class Sdf3D(Sdf):
         return surface_points, surface_vals
 
     def transform(self, delta_T, detailed = False):
-        """
-        Transform the grid by pose T and scale with canonical reference frame at the SDF center with axis alignment
+        """Transform the grid by pose T and scale with canonical reference
+        frame at the SDF center with axis alignment.
 
         Parameters
         ----------
@@ -697,6 +691,7 @@ class Sdf3D(Sdf):
             w = np.linalg.solve(X, y_vec)
         except np.linalg.LinAlgError:
             logging.error('Singular matrix. Probably a bug')
+            return None
 
         # get positive roots
         possible_t = np.roots(w)

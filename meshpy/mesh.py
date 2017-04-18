@@ -11,7 +11,7 @@ import numpy as np
 import scipy.spatial as ss
 import sklearn.decomposition
 
-from core import RigidTransform, PointCloud
+from core import RigidTransform, Point, PointCloud
 
 import obj_file
 import stable_pose as sp
@@ -101,6 +101,7 @@ class Mesh3D(object):
         self.inertia_ = None
         self.bb_center_ = self._compute_bb_center() 
         self.centroid_ = self._compute_centroid()
+        self.surface_area_ = None
 
         if self.center_of_mass_ is None:
             if uniform_com:
@@ -129,6 +130,8 @@ class Mesh3D(object):
         self.vertices_ = np.array(v)
         self.mass_ = None
         self.inertia_ = None
+        self.normals_ = None
+        self.surface_area_ = None
         self.bb_center_ = self._compute_bb_center()
         self.centroid_ = self._compute_centroid()
 
@@ -145,6 +148,7 @@ class Mesh3D(object):
         self.triangles_ = np.array(t)
         self.mass_ = None
         self.inertia_ = None
+        self.surface_area_ = None
 
     @property
     def normals(self):
@@ -181,6 +185,20 @@ class Mesh3D(object):
     def center_of_mass(self, com):
         self.center_of_mass_ = com
         self.inertia_ = None
+
+    @property
+    def num_vertices(self):
+        """ :obj:`int`:
+        The number of total vertices
+        """
+        return self.vertices.shape[0]
+
+    @property
+    def num_triangles(self):
+        """ :obj:`int`:
+        The number of total triangles
+        """
+        return self.triangles.shape[0]
 
     #=============================================
     # Read-Only Properties
@@ -377,11 +395,13 @@ class Mesh3D(object):
         float
             The surface area of the mesh.
         """
-        area = 0.0
-        for tri in self.triangles:
-            tri_area = self._area_of_tri(tri)
-            area += tri_area
-        return area
+        if self.surface_area_ is None:
+            area = 0.0
+            for tri in self.triangles:
+                tri_area = self._area_of_tri(tri)
+                area += tri_area
+            self.surface_area_ = area
+        return self.surface_area_
 
     def total_volume(self):
         """Return the total volume of the mesh.
@@ -559,7 +579,7 @@ class Mesh3D(object):
         ip = (self.vertices - np.tile(hull_vertex, [self.vertices.shape[0], 1])).dot(n)
         if ip[0] > 0:
             normals = [[-n[0], -n[1], -n[2]] for n in normals]
-        self.normals = normals
+        self.normals = np.array(normals)
 
     def scale_principal_eigenvalues(self, new_evals):
         self.normalize_vertices()
@@ -579,6 +599,7 @@ class Mesh3D(object):
             self.vertices[:,0] *= new_evals[0]/np.sqrt(evals[0])
             self.vertices[:,1] *= new_evals[0]/np.sqrt(evals[0])
             self.vertices[:,2] *= new_evals[0]/np.sqrt(evals[0])
+
         self.center_vertices_bb()
         return evals
 
@@ -658,7 +679,9 @@ class Mesh3D(object):
         vertex_cloud = PointCloud(self.vertices_.T, frame=T.from_frame)
         vertex_cloud_tf = T * vertex_cloud
         vertices = vertex_cloud_tf.data.T
-        return Mesh3D(vertices.copy(), self.triangles.copy())
+        com = Point(self.center_of_mass_, frame=T.from_frame)
+        com_tf = T * com
+        return Mesh3D(vertices.copy(), self.triangles.copy(), center_of_mass=com_tf.data)
 
     def random_points(self, n_points):
         """Generate uniformly random points on the surface of the mesh.
@@ -766,7 +789,7 @@ class Mesh3D(object):
 
         # Compute scale factor and rescale vertices
         scale_factor = scale / relative_scale
-        self.vertices_ = scale_factor * self.vertices_
+        self.vertices = scale_factor * self.vertices
 
     def rescale(self, scale_factor):
         """Rescales the vertex coordinates by scale_factor.
@@ -776,7 +799,7 @@ class Mesh3D(object):
         scale_factor : float
             The desired scale factor for the mesh's vertices.
         """
-        self.vertices = scale_factor * self.vertices_
+        self.vertices = scale_factor * self.vertices
 
     def convex_hull(self):
         """Return a 3D mesh that represents the convex hull of the mesh.
@@ -861,6 +884,37 @@ class Mesh3D(object):
             if p > min_prob:
                 stable_poses.append(sp.StablePose(p, r, x0))
         return stable_poses
+
+    def merge(self, other_mesh):
+        """ Combines this mesh with another mesh.
+        
+        Parameters
+        ----------
+        other_mesh : :obj:`Mesh3D`
+            the mesh to combine with
+
+        Returns
+        -------
+        :obj:`Mesh3D`
+            merged mesh
+        """
+        total_vertices = self.num_vertices + other_mesh.num_vertices
+        total_triangles = self.num_triangles + other_mesh.num_triangles
+        combined_vertices = np.zeros([total_vertices, 3])
+        combined_triangles = np.zeros([total_triangles, 3])
+
+        combined_vertices[:self.num_vertices, :] = self.vertices
+        combined_vertices[self.num_vertices:, :] = other_mesh.vertices
+
+        combined_triangles[:self.num_triangles, :] = self.triangles
+        combined_triangles[self.num_triangles:, :] = other_mesh.triangles + self.num_vertices
+
+        combined_normals = None
+        if self.normals is not None and other_mesh.normals is not None:
+            combined_normals = np.zeros([total_vertices, 3])
+            combined_normals[:self.num_vertices, :] = self.normals
+            combined_normals[self.num_vertices:, :] = other_mesh.normals
+        return Mesh3D(combined_vertices, combined_triangles, combined_normals)
 
     def visualize(self, color=(0.5, 0.5, 0.5), style='surface', opacity=1.0):
         """Plots visualization of mesh using MayaVI.
