@@ -4,6 +4,7 @@ except:
     print 'Unable to import meshrender shared library! Rendering will not work. Likely due to missing Boost.Numpy'
     print 'Boost.Numpy can be installed following the instructions in https://github.com/ndarray/Boost.NumPy'
 from mesh import Mesh3D
+from image_converter import ImageToMeshConverter
 from obj_file import ObjFile
 from off_file import OffFile
 from sdf import Sdf, Sdf3D
@@ -20,6 +21,7 @@ except:
 
 __all__ = ['Mesh3D',
            'ViewsphereDiscretizer', 'PlanarWorksurfaceDiscretizer', 'VirtualCamera', 'SceneObject',
+           'ImageToMeshConverter',
            'ObjFile', 'OffFile',
            'Sdf', 'Sdf3D',
            'SdfFile',
