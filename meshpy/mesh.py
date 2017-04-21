@@ -5,6 +5,7 @@ Authors: Jeff Mahler and Matt Matl
 import math
 import Queue
 import os
+import random
 import sys
 
 import numpy as np
@@ -102,6 +103,7 @@ class Mesh3D(object):
         self.bb_center_ = self._compute_bb_center() 
         self.centroid_ = self._compute_centroid()
         self.surface_area_ = None
+        self.face_dag_ = None
 
         if self.center_of_mass_ is None:
             if uniform_com:
@@ -824,92 +826,17 @@ class Mesh3D(object):
         :obj:`list` of :obj:`StablePose`
             A list of StablePose objects for the mesh.
         """
-        # TODO: remove
-        from core import Point, PointCloud
-        from visualization import Visualizer3D as vis
-        import IPython
+        # compute face dag if necessary
+        if self.face_dag_ is None:
+            self._compute_face_dag()
+        cvh_mesh = self.face_dag_.mesh
+        cvh_verts = self.face_dag_.mesh.vertices
 
-        # read variables
+        # propagate probabilities
         cm = self.center_of_mass
-        cvh_mesh = self.convex_hull()
+        prob_map = Mesh3D._compute_prob_map(self.face_dag_.nodes.values(), cvh_verts, cm)
 
-        cvh_tris = cvh_mesh.triangles
-        cvh_verts  = cvh_mesh.vertices
-
-        edge_to_faces = {} # Mapping from Edge objects to adjacent triangle lists
-        tri_to_vert = {}   # Mapping from Triangle tuples to Vertex objects
-
-        # Create a map from edges to bordering faces and from
-        # faces to Vertex objects.
-        for tri in cvh_tris:
-            tri_verts = [cvh_verts[i] for i in tri]
-            s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
-            s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
-            s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
-            for seg in [s1, s2, s3]:
-                k = seg.tup
-                if k in edge_to_faces:
-                    edge_to_faces[k] += [tri]
-                else:
-                    edge_to_faces[k] = [tri]
-
-            p = self._compute_proj_area(tri_verts) / (4 * math.pi)
-            tri_to_vert[tuple(tri)] = Mesh3D._GraphVertex(p, tri)
-
-        # determining if landing on a given face implies toppling, and initializes a directed acyclic graph
-        # a directed edge between two graph nodes implies that landing on one face will lead to toppling onto its successor
-        # an outdegree of 0 for any graph node implies it is a sink (the object will come to rest if it topples to this face)
-        for tri in cvh_tris:
-            tri_verts = [cvh_verts[i] for i in tri]
-
-            proj_cm = Mesh3D._proj_point_to_plane(tri_verts, cm)
-
-            # update list of top vertices, add edges between vertices as needed
-            if not Mesh3D._point_in_tri(tri_verts, proj_cm):
-                s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
-                s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
-                s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
-
-                # compute the closest edges
-                closest_edges = Mesh3D._closest_segment(proj_cm, [s1, s2, s3])
-
-                # choose the closest edge based on the midpoint of the triangle segments
-                if len(closest_edges) == 1:
-                    closest_edge = closest_edges[0]
-                else:
-                    closest_edge = Mesh3D._closer_segment(proj_cm, closest_edges[0], closest_edges[1])                
-            
-                # compute the topple face from the closest edge
-                for face in edge_to_faces[closest_edge.tup]:
-                    if list(face) != list(tri):
-                        topple_face = face
-                predecessor = tri_to_vert[tuple(tri)]
-                successor = tri_to_vert[tuple(topple_face)]
-                predecessor.add_edge(successor)
-
-            """
-            if np.allclose(tri, np.array([20,23,26])):
-                vis.points(Point(np.array(tri_verts[0]),frame='test'), color=(0,0,1), scale=0.001)
-                vis.points(Point(np.array(tri_verts[1]),frame='test'), color=(0,1,1), scale=0.001)
-                vis.points(Point(np.array(tri_verts[2]),frame='test'), color=(0,1,0), scale=0.001)
-                IPython.embed()
-            """
-
-        prob_map = Mesh3D._compute_prob_map(tri_to_vert.values(), cvh_verts, cm)
-
-        """
-        for vertex in tri_to_vert.values():
-            if not vertex.sink.is_sink:
-                face = vertex.sink.face
-                points = PointCloud(cvh_verts[face,:].T, frame='test')
-                verts = cvh_verts[face,:]
-                tris = np.array([[0,1,2]])
-                #vis.points(points, color=(0,0,1), scale=0.001)
-                vis.mesh(Mesh3D(verts, tris), color=(0,0,1), style='surface')
-        """
-
-        print 'Total prob', np.sum(prob_map.values())
-
+        # compute stable poses
         stable_poses = []
         for face, p in prob_map.items():
             x0 = cvh_verts[face[0]]
@@ -918,6 +845,107 @@ class Mesh3D(object):
                 stable_poses.append(sp.StablePose(p, r, x0))
 
         return stable_poses
+
+    def resting_face(self, T_obj_table, eps=1e-10):
+        """ Returns the face that the mesh will rest on if it lands
+        on an infinite planar worksurface quasi-statically in the given
+        transformation (only the rotation is used).
+
+        Parameters
+        ----------
+        T_obj_table : :obj:`core.RigidTransform`
+            transformation from object to table basis (z-axis upward) specifying the orientation of the mesh
+        eps : float
+            numeric tolerance in cone projection solver
+        
+        Returns
+        -------
+        :obj:`StablePose`
+            stable pose specifying the face that the mesh will land on
+        """
+        # TODO: remove
+        import IPython
+
+        # compute face dag if necessary
+        if self.face_dag_ is None:
+            self._compute_face_dag()
+
+        # adjust transform to place mesh in contact with table
+        T_obj_table = self.get_T_surface_obj(T_obj_table, delta=0.0)
+
+        # transform mesh
+        cvh_mesh = self.face_dag_.mesh 
+        cvh_verts = cvh_mesh.vertices
+        mesh_tf = cvh_mesh.transform(T_obj_table)
+        vertices_tf = mesh_tf.vertices
+
+        # find the vertex with the minimum z value
+        min_z = np.min(vertices_tf[:,2])
+        contact_ind = np.where(vertices_tf[:,2] == min_z)[0]
+        if contact_ind.shape[0] == 0:
+            raise ValueError('Unable to find the vertex contacting the table!')
+        vertex_ind = contact_ind[0]
+
+        # project the center of mass onto the table plane
+        table_tri = np.array([[0,0,0],
+                              [1,0,0],
+                              [0,1,0]])
+        proj_cm = Mesh3D._proj_point_to_plane(table_tri, self.center_of_mass)
+        contact_vertex = vertices_tf[vertex_ind]
+        v_cm = proj_cm - contact_vertex
+        v_cm = v_cm[:2]
+
+        # compute which face the vertex will topple onto
+        # break loop when topple tri is found        
+        topple_tri = None
+        neighboring_tris = self.face_dag_.vertex_to_tri[vertex_ind]
+        random.shuffle(neighboring_tris)
+        for neighboring_tri in neighboring_tris:
+            # find indices of other two vertices
+            ind = [0, 1, 2]
+            for i, v in enumerate(neighboring_tri):
+                if np.allclose(contact_vertex, vertices_tf[v]):
+                    ind.remove(i)
+                    
+            # form edges in table plane
+            i1 = neighboring_tri[ind[0]]
+            i2 = neighboring_tri[ind[1]]
+            v1 = Mesh3D._proj_point_to_plane(table_tri, vertices_tf[i1])
+            v2 = Mesh3D._proj_point_to_plane(table_tri, vertices_tf[i2])
+            u1 = v1 - contact_vertex
+            u2 = v2 - contact_vertex
+            U = np.array([u1[:2], u2[:2]]).T
+
+            # solve linear subproblem to find cone coefficients
+            try:
+                alpha = np.linalg.solve(U + eps*np.eye(2), v_cm)
+
+                # exit loop with topple tri if found
+                if np.all(alpha >= 0):
+                    topple_tri = neighboring_tri
+                    break
+            except np.linalg.LinAlgError:
+                logging.warning('Failed to solve linear system')
+
+        # check solution
+        if topple_tri is None:
+            raise ValueError('Failed to find a valid topple triangle')
+
+        # compute the face that the mesh will eventually rest on
+        # by following the child nodes to a sink
+        cur_node = self.face_dag_.nodes[tuple(topple_tri)]
+        visited = []
+        while not cur_node.is_sink:
+            if cur_node in visited:
+                raise ValueError('Found loop!')
+            visited.append(cur_node)
+            cur_node = cur_node.children[0]
+
+        # create stable pose
+        resting_face = cur_node.face
+        x0 = cvh_verts[vertex_ind]
+        r = cvh_mesh._compute_basis([cvh_verts[i] for i in resting_face])
+        return sp.StablePose(0.0, r, x0)
 
     def merge(self, other_mesh):
         """ Combines this mesh with another mesh.
@@ -1298,6 +1326,86 @@ class Mesh3D(object):
         y_o = np.cross(z_o, x_o)
         return np.array([np.transpose(x_o), np.transpose(y_o), np.transpose(z_o)])
 
+    def _compute_face_dag(self):
+        """ Computes a directed acyclic graph (DAG) specifying the
+        toppling structure of the mesh faces by:
+            1) Computing the mesh convex hull
+            2) Creating maps from vertices and edges to the triangles that share them 
+            3) Connecting each triangle in the convex hull to the face it will topple to, if landed on
+        Modifies the class variable self.face_dag_.
+        """
+        # compute convex hull
+        cm = self.center_of_mass
+        cvh_mesh = self.convex_hull()
+        cvh_tris = cvh_mesh.triangles
+        cvh_verts  = cvh_mesh.vertices
+
+        # create vertex and edge maps, and create nodes of graph
+        nodes = {}   # mapping from triangle tuples to GraphVertex objects
+        vertex_to_tri = {} # mapping from vertex indidces to adjacent triangle lists
+        edge_to_tri = {} # mapping from edge tuples to adjacent triangle lists
+
+        for tri in cvh_tris:
+            # add vertex to tri mapping
+            for v in tri:
+                if v in vertex_to_tri:
+                    vertex_to_tri[v] += [tuple(tri)]
+                else:
+                    vertex_to_tri[v] = [tuple(tri)]
+
+            # add edges to tri mapping
+            tri_verts = [cvh_verts[i] for i in tri]
+            s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
+            s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
+            s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
+            for seg in [s1, s2, s3]:
+                k = seg.tup
+                if k in edge_to_tri:
+                    edge_to_tri[k] += [tuple(tri)]
+                else:
+                    edge_to_tri[k] = [tuple(tri)]
+
+            # add triangle to graph with prior probability estimate
+            p = self._compute_proj_area(tri_verts) / (4 * math.pi)
+            nodes[tuple(tri)] = Mesh3D._GraphVertex(p, tri)
+
+        # connect nodes in the graph based on geometric toppling criteria
+        # a directed edge between two graph nodes implies that landing on one face will lead to toppling onto its successor
+        # an outdegree of 0 for any graph node implies it is a sink (the object will come to rest if it topples to this face)
+        for tri in cvh_tris:
+            # vertices
+            tri_verts = [cvh_verts[i] for i in tri]
+
+            # project the center of mass onto the triangle
+            proj_cm = Mesh3D._proj_point_to_plane(tri_verts, cm)
+
+            # update list of top vertices, add edges between vertices as needed
+            if not Mesh3D._point_in_tri(tri_verts, proj_cm):
+                # form segment objects
+                s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
+                s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
+                s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
+
+                # compute the closest edges
+                closest_edges = Mesh3D._closest_segment(proj_cm, [s1, s2, s3])
+
+                # choose the closest edge based on the midpoint of the triangle segments
+                if len(closest_edges) == 1:
+                    closest_edge = closest_edges[0]
+                else:
+                    closest_edge = Mesh3D._closer_segment(proj_cm, closest_edges[0], closest_edges[1])                
+            
+                # compute the topple face from the closest edge
+                for face in edge_to_tri[closest_edge.tup]:
+                    if list(face) != list(tri):
+                        topple_face = face
+                predecessor = nodes[tuple(tri)]
+                successor = nodes[tuple(topple_face)]
+                predecessor.add_edge(successor)
+        
+        # save to class variable
+        self.face_dag_ = Mesh3D._FaceDAG(cvh_mesh, nodes, vertex_to_tri, edge_to_tri)
+
     class _Segment:
         """Object representation of a finite line segment in 3D space.
 
@@ -1384,6 +1492,26 @@ class Mesh3D(object):
                 return (tuple(self.p1), tuple(self.p2))
             else:
                 return (tuple(self.p2), tuple(self.p1))
+
+    class _FaceDAG:
+        """ A directed acyclic graph specifying the topppling dependency structure
+        for faces of a given mesh geometry with a specific center of mass.
+        Useful for quasi-static stable pose analysis.
+
+        Attributes
+        ----------
+        mesh : :obj:`Mesh3D`
+            the 3D triangular mesh that the DAG refers to (usually the convex hull) 
+        nodes : :obj:`dict` mapping 3-`tuple` of integers (triangles) to :obj:`Mesh3D._GraphVertex`
+            the nodes in the DAG
+        vertex_to_tri : :obj:`dict` mapping :obj:`int` (vertex indices) to 3-`tuple` of integers (triangles)
+        edge_to_tri : :obj:`dict` mapping 2-`tuple` of integers (edges) to 3-`tuple` of integers (triangles)
+        """
+        def __init__(self, mesh, nodes, vertex_to_tri, edge_to_tri):
+            self.mesh = mesh
+            self.nodes = nodes
+            self.vertex_to_tri = vertex_to_tri
+            self.edge_to_tri = edge_to_tri
 
     class _GraphVertex:
         """A directed graph vertex that links a probability to a face.
@@ -1550,20 +1678,27 @@ class Mesh3D(object):
             if min_dist + 0.000001 >= distances[i]:
                 min_segs.append(segments[i])
 
-        """
-        if len(min_segs) == 1:
-            # get the one closest segment
-            min_seg = min_segs[0]
-        else:
-            # get the midline of the two segments
-            midpoint = 
-        """
-
         return min_segs
 
     @staticmethod
     def _closer_segment(point, s1, s2):
-        """ Compute the line separating two segments with a common vertex """
+        """ Compute which segment is closer to a given point by seeing
+        which side of the midline between the two segments the point falls on.
+
+        Parameters
+        ----------
+        point : :obj:`numpy.ndarray`
+            3d array containing point projected onto plane spanned by s1, s1
+        s1 : :obj:`Mesh3D._Segment`
+            first segment to check
+        s2 : :obj:`Mesh3D._Segment`
+            second segment to check
+
+        Returns
+        -------
+        :obj:`Mesh3D._Segment`
+            best segment to check        
+        """
         # find the shared vertex and compute the midline between the segments
         if np.allclose(s1.p1, s2.p1):
             p = s1.p1
@@ -1615,19 +1750,13 @@ class Mesh3D(object):
         :obj:`dictionary` of :obj:`tuple` of int to float
             Maps tuple representations of faces to probabilities.
         """
-        # TODO: remove
-        from core import Point, PointCloud
-        from visualization import Visualizer3D as vis
-        import IPython
-
+        # follow the child nodes of each vertex until a sink, then add in the resting probability
         prob_mapping = {}
-        plotted = False
         for vertex in vertices:
             c = vertex
             visited = []
             while not c.is_sink:
                 if c in visited:
-                    print 'Loop!'
                     break
                 visited.append(c)
                 c = c.children[0]
@@ -1637,32 +1766,7 @@ class Mesh3D(object):
             prob_mapping[tuple(c.face)] += vertex.probability
             vertex.sink = c
 
-            """
-            if not c.is_sink and not plotted:
-                plotted = True
-                for k, vertex in enumerate(visited):
-                    face = vertex.face
-                    verts = cvh_verts[face,:]
-                    tris = np.array([[0,1,2]])
-
-                    proj_cm = Mesh3D._proj_point_to_plane(verts, cm)
-
-                    vis.points(Point(proj_cm, frame='test'), color=(1,0,0), scale=0.002)
-                    if k == 0:
-                        vis.mesh(Mesh3D(verts, tris), color=(0,1,0), style='surface')
-                    else:
-                        vis.mesh(Mesh3D(verts, tris), color=(0,0,1), style='surface')
-                    if k == 3:
-                        break
-                
-                # plot invalid sink
-                face = c.face
-                verts = cvh_verts[face,:]
-                tris = np.array([[0,1,2]])
-                proj_cm = Mesh3D._proj_point_to_plane(verts, cm)
-                vis.mesh(Mesh3D(verts, tris), color=(0,1,1), style='surface')
-            """
-
+        # set resting probabilities of faces to zero
         for vertex in vertices:
             if not vertex.is_sink:
                 prob_mapping[tuple(vertex.face)] = 0
