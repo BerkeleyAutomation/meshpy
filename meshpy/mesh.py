@@ -908,7 +908,7 @@ class Mesh3D(object):
                 vis.mesh(Mesh3D(verts, tris), color=(0,0,1), style='surface')
         """
 
-        IPython.embed()
+        print 'Total prob', np.sum(prob_map.values())
 
         stable_poses = []
         for face, p in prob_map.items():
@@ -1627,6 +1627,7 @@ class Mesh3D(object):
             visited = []
             while not c.is_sink:
                 if c in visited:
+                    print 'Loop!'
                     break
                 visited.append(c)
                 c = c.children[0]
