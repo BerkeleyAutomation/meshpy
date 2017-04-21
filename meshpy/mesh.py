@@ -824,6 +824,12 @@ class Mesh3D(object):
         :obj:`list` of :obj:`StablePose`
             A list of StablePose objects for the mesh.
         """
+        # TODO: remove
+        from core import Point, PointCloud
+        from visualization import Visualizer3D as vis
+        import IPython
+
+        # read variables
         cm = self.center_of_mass
         cvh_mesh = self.convex_hull()
 
@@ -864,10 +870,16 @@ class Mesh3D(object):
                 s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
                 s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
 
-                # TODO: Only using one edge at the moment, should maybe do two
+                # compute the closest edges
                 closest_edges = Mesh3D._closest_segment(proj_cm, [s1, s2, s3])
-                closest_edge = closest_edges[0]
 
+                # choose the closest edge based on the midpoint of the triangle segments
+                if len(closest_edges) == 1:
+                    closest_edge = closest_edges[0]
+                else:
+                    closest_edge = Mesh3D._closer_segment(proj_cm, closest_edges[0], closest_edges[1])                
+            
+                # compute the topple face from the closest edge
                 for face in edge_to_faces[closest_edge.tup]:
                     if list(face) != list(tri):
                         topple_face = face
@@ -875,7 +887,28 @@ class Mesh3D(object):
                 successor = tri_to_vert[tuple(topple_face)]
                 predecessor.add_edge(successor)
 
-        prob_map = Mesh3D._compute_prob_map(tri_to_vert.values())
+            """
+            if np.allclose(tri, np.array([20,23,26])):
+                vis.points(Point(np.array(tri_verts[0]),frame='test'), color=(0,0,1), scale=0.001)
+                vis.points(Point(np.array(tri_verts[1]),frame='test'), color=(0,1,1), scale=0.001)
+                vis.points(Point(np.array(tri_verts[2]),frame='test'), color=(0,1,0), scale=0.001)
+                IPython.embed()
+            """
+
+        prob_map = Mesh3D._compute_prob_map(tri_to_vert.values(), cvh_verts, cm)
+
+        """
+        for vertex in tri_to_vert.values():
+            if not vertex.sink.is_sink:
+                face = vertex.sink.face
+                points = PointCloud(cvh_verts[face,:].T, frame='test')
+                verts = cvh_verts[face,:]
+                tris = np.array([[0,1,2]])
+                #vis.points(points, color=(0,0,1), scale=0.001)
+                vis.mesh(Mesh3D(verts, tris), color=(0,0,1), style='surface')
+        """
+
+        IPython.embed()
 
         stable_poses = []
         for face, p in prob_map.items():
@@ -883,6 +916,7 @@ class Mesh3D(object):
             r = cvh_mesh._compute_basis([cvh_verts[i] for i in face])
             if p > min_prob:
                 stable_poses.append(sp.StablePose(p, r, x0))
+
         return stable_poses
 
     def merge(self, other_mesh):
@@ -1371,9 +1405,13 @@ class Mesh3D(object):
             self.children = []
             self.parents = []
             self.face = face
-            self.is_sink = True if not self.children else False
             self.has_parent = False
             self.num_parents = 0
+            self.sink = None
+
+        @property
+        def is_sink(self):
+            return len(self.children) == 0
 
         def add_edge(self, child):
             """Connects this vertex to the input child vertex.
@@ -1383,7 +1421,6 @@ class Mesh3D(object):
             child : :obj:`_GraphVertex`
                 The child to link to.
             """
-            self.is_sink = False
             self.children.append(child)
             child.parents.append(self)
             child.has_parent = True
@@ -1513,10 +1550,60 @@ class Mesh3D(object):
             if min_dist + 0.000001 >= distances[i]:
                 min_segs.append(segments[i])
 
+        """
+        if len(min_segs) == 1:
+            # get the one closest segment
+            min_seg = min_segs[0]
+        else:
+            # get the midline of the two segments
+            midpoint = 
+        """
+
         return min_segs
 
     @staticmethod
-    def _compute_prob_map(vertices):
+    def _closer_segment(point, s1, s2):
+        """ Compute the line separating two segments with a common vertex """
+        # find the shared vertex and compute the midline between the segments
+        if np.allclose(s1.p1, s2.p1):
+            p = s1.p1
+            l1 = s1.p2 - p
+            l2 = s2.p2 - p
+        elif np.allclose(s1.p2, s2.p1):
+            p = s1.p2
+            l1 = s1.p1 - p
+            l2 = s2.p2 - p
+        elif np.allclose(s1.p1, s2.p2):
+            p = s1.p1
+            l1 = s1.p2 - p
+            l2 = s2.p1 - p
+        else:
+            p = s1.p2
+            l1 = s1.p1 - p
+            l2 = s2.p1 - p
+        v = point - p
+        midline = 0.5 * (l1 + l2)
+
+        # compute projection onto the midline
+        if np.linalg.norm(midline) == 0:
+            raise ValueError('Illegal triangle')
+        alpha = midline.dot(v) / midline.dot(midline)
+        w = alpha * midline
+
+        # compute residual (component of query point orthogonal to midline)
+        x = v - w
+
+        # figure out which line is on the same side of the midline
+        # as the residual
+        d1 = x.dot(l1)
+        d2 = x.dot(l2)
+        closer_segment = s2
+        if d1 > d2:
+            closer_segment = s1
+        return closer_segment
+
+    @staticmethod
+    def _compute_prob_map(vertices, cvh_verts, cm):
         """Creates a map from faces to static stability probabilities.
 
         Parameters
@@ -1528,7 +1615,13 @@ class Mesh3D(object):
         :obj:`dictionary` of :obj:`tuple` of int to float
             Maps tuple representations of faces to probabilities.
         """
+        # TODO: remove
+        from core import Point, PointCloud
+        from visualization import Visualizer3D as vis
+        import IPython
+
         prob_mapping = {}
+        plotted = False
         for vertex in vertices:
             c = vertex
             visited = []
@@ -1541,10 +1634,38 @@ class Mesh3D(object):
             if tuple(c.face) not in prob_mapping.keys():
                 prob_mapping[tuple(c.face)] = 0.0
             prob_mapping[tuple(c.face)] += vertex.probability
+            vertex.sink = c
+
+            """
+            if not c.is_sink and not plotted:
+                plotted = True
+                for k, vertex in enumerate(visited):
+                    face = vertex.face
+                    verts = cvh_verts[face,:]
+                    tris = np.array([[0,1,2]])
+
+                    proj_cm = Mesh3D._proj_point_to_plane(verts, cm)
+
+                    vis.points(Point(proj_cm, frame='test'), color=(1,0,0), scale=0.002)
+                    if k == 0:
+                        vis.mesh(Mesh3D(verts, tris), color=(0,1,0), style='surface')
+                    else:
+                        vis.mesh(Mesh3D(verts, tris), color=(0,0,1), style='surface')
+                    if k == 3:
+                        break
+                
+                # plot invalid sink
+                face = c.face
+                verts = cvh_verts[face,:]
+                tris = np.array([[0,1,2]])
+                proj_cm = Mesh3D._proj_point_to_plane(verts, cm)
+                vis.mesh(Mesh3D(verts, tris), color=(0,1,1), style='surface')
+            """
 
         for vertex in vertices:
             if not vertex.is_sink:
                 prob_mapping[tuple(vertex.face)] = 0
+
         return prob_mapping
 
 if __name__ == '__main__':
