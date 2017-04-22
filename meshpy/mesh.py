@@ -740,6 +740,7 @@ class Mesh3D(object):
         ----
         This method copies the vertices and triangles of the mesh.
         """
+        T_surface_ori_obj.translation = np.zeros(3)
         obj_tf = self.transform(T_surface_ori_obj)
         mn, mx = obj_tf.bounding_box()
 
@@ -842,12 +843,12 @@ class Mesh3D(object):
             x0 = cvh_verts[face[0]]
             r = cvh_mesh._compute_basis([cvh_verts[i] for i in face])
             if p > min_prob:
-                stable_poses.append(sp.StablePose(p, r, x0))
+                stable_poses.append(sp.StablePose(p, r, x0, face=face))
 
         return stable_poses
 
-    def resting_face(self, T_obj_table, eps=1e-10):
-        """ Returns the face that the mesh will rest on if it lands
+    def resting_pose(self, T_obj_table, eps=1e-10):
+        """ Returns the stable pose that the mesh will rest on if it lands
         on an infinite planar worksurface quasi-statically in the given
         transformation (only the rotation is used).
 
@@ -945,7 +946,7 @@ class Mesh3D(object):
         resting_face = cur_node.face
         x0 = cvh_verts[vertex_ind]
         r = cvh_mesh._compute_basis([cvh_verts[i] for i in resting_face])
-        return sp.StablePose(0.0, r, x0)
+        return sp.StablePose(0.0, r, x0, face=resting_face)
 
     def merge(self, other_mesh):
         """ Combines this mesh with another mesh.
