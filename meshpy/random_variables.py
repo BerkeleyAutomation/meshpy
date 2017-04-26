@@ -29,8 +29,8 @@ class CameraSample(object):
 
 class RenderSample(object):
     """ Struct to encapsulate the results of sampling rendered images from a camera. """
-    def __init__(self, renders, camera):
-        self.renders = renders
+    def __init__(self, image_bundle, camera):
+        self.image_bundle = image_bundle
         self.camera = camera
 
 class UniformViewsphereRandomVariable(RandomVariable):
@@ -84,7 +84,7 @@ class UniformViewsphereRandomVariable(RandomVariable):
         self.roll_rv = ss.uniform(loc=self.min_roll, scale=self.max_roll-self.min_roll)
 
         RandomVariable.__init__(self, self.num_prealloc_samples)
-        
+
     def object_to_camera_pose(self, radius, elev, az, roll):
         """ Convert spherical coords to an object-camera pose. """
         # generate camera center from spherical coords
@@ -123,7 +123,7 @@ class UniformViewsphereRandomVariable(RandomVariable):
         ----------
         size : int
             number of sample to take
-        
+
         Returns
         -------
         :obj:`list` of :obj:`RigidTransform`
@@ -234,7 +234,7 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         self.ty_rv = ss.uniform(loc=self.min_y, scale=self.max_y-self.min_y)
 
         RandomVariable.__init__(self, self.num_prealloc_samples)
-        
+
     def _parse_config(self, config):
         """ Reads parameters from the config into class members """
         # camera params
@@ -262,7 +262,7 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         self.max_x = config['max_x']
         self.min_y = config['min_y']
         self.max_y = config['max_y']
-        
+
     def object_to_camera_pose(self, radius, elev, az, roll, x, y):
         """ Convert spherical coords to an object-camera pose. """
         # generate camera center from spherical coords
@@ -270,7 +270,7 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         camera_center_obj = np.array([sph2cart(radius, az, elev)]).squeeze() + delta_t
         camera_z_obj = -np.array([sph2cart(radius, az, elev)]).squeeze()
         camera_z_obj = camera_z_obj / np.linalg.norm(camera_z_obj)
-        
+
         # find the canonical camera x and y axes
         camera_x_par_obj = np.array([camera_z_obj[1], -camera_z_obj[0], 0])
         if np.linalg.norm(camera_x_par_obj) == 0:
@@ -295,7 +295,7 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         T_obj_camera = RigidTransform(R_obj_camera, t_obj_camera,
                                       from_frame=self.frame,
                                       to_frame='obj')
-                            
+
         return T_obj_camera.inverse()
 
     def camera_intrinsics(self, T_camera_obj, f, cx, cy):
@@ -321,7 +321,7 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         ----------
         size : int
             number of sample to take
-        
+
         Returns
         -------
         :obj:`list` of :obj:`RigidTransform`
@@ -374,6 +374,10 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         if size == 1:
             return samples[0]
         return samples
+
+
+ ## workonthis
+ ## try to get this into the render_dataset
 
 class UniformPlanarWorksurfaceImageRandomVariable(RandomVariable):
     """ Random variable for sampling images from a camera """
@@ -455,10 +459,11 @@ class UniformPlanarWorksurfaceImageRandomVariable(RandomVariable):
         self.num_prealloc_samples = num_prealloc_samples
 
         # init random variables
+        ## like a stream sort of
         self.ws_rv = UniformPlanarWorksurfaceRandomVariable(self.frame, self.config, num_prealloc_samples=self.num_prealloc_samples)
 
         RandomVariable.__init__(self, self.num_prealloc_samples)
-        
+
     def sample(self, size=1):
         """ Sample random variables from the model.
 
@@ -466,7 +471,7 @@ class UniformPlanarWorksurfaceImageRandomVariable(RandomVariable):
         ----------
         size : int
             number of sample to take
-        
+
         Returns
         -------
         :obj:`list` of :obj:`RigidTransform`
@@ -479,8 +484,10 @@ class UniformPlanarWorksurfaceImageRandomVariable(RandomVariable):
 
             # render images
             camera = VirtualCamera(camera_sample.camera_intr)
-            for name, scene_obj in self.scene_objs.iteritems():
-                camera.add_to_scene(name, scene_obj)
+            # if scene_objs is not None
+            if self.scene_objs:
+                for name, scene_obj in self.scene_objs.iteritems():
+                    camera.add_to_scene(name, scene_obj)
 
             image_bundle = {}
             for render_mode in self.render_modes:
@@ -496,4 +503,3 @@ class UniformPlanarWorksurfaceImageRandomVariable(RandomVariable):
         if size == 1:
             return samples[0]
         return samples
-        

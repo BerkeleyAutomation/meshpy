@@ -2,6 +2,9 @@
 Class to render a set of images for a graspable objects
 Author: Jeff Mahler
 """
+
+## workonthis
+
 import copy
 import logging
 import numpy as np
@@ -543,7 +546,13 @@ class VirtualCamera(object):
         if render_mode == RenderMode.SEGMASK:
             # wrap binary images
             for binary_im in binary_ims:
+                # NUMBER corresponds to channel
                 images.append(BinaryImage(binary_im[:,:,0], frame=self._camera_intr.frame))
+
+        ## workonthis
+        elif render_mode == RenderMode.COLOR:
+            # for binary
+            pass
 
         elif render_mode == RenderMode.DEPTH:
             # render depth image

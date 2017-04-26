@@ -10,6 +10,7 @@
 #include <GL/freeglut.h> 
 #define GLAPIENTRY
 
+// workonthis
 // global rending constants
 float near = 0.05f;
 float far = 1e8f;
