@@ -27,6 +27,10 @@ class CameraSample(object):
         self.tx = tx
         self.ty = ty
 
+    @property
+    def T_camera_world(self):
+        return self.object_to_camera_pose.inverse().as_frames(self.camera_intr.frame, 'world')
+
 class RenderSample(object):
     """ Struct to encapsulate the results of sampling rendered images from a camera. """
     def __init__(self, renders, camera):

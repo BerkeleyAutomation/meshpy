@@ -725,13 +725,13 @@ class Mesh3D(object):
                     tri_point_pairs.append((i, contact_point))
         return tri_point_pairs
 
-    def get_T_surface_obj(self, T_surface_ori_obj, delta=0.0):
+    def get_T_surface_obj(self, T_obj_surface, delta=0.0):
         """ Gets the transformation that puts the object resting exactly on
         the z=delta plane
 
         Parameters
         ----------
-        T_surface_ori_obj : :obj:`RigidTransform`
+        T_obj_surface : :obj:`RigidTransform`
             The RigidTransform by which the mesh is transformed.
         delta : float
             Z-coordinate to rest the mesh on
@@ -740,17 +740,18 @@ class Mesh3D(object):
         ----
         This method copies the vertices and triangles of the mesh.
         """
-        T_surface_ori_obj.translation = np.zeros(3)
-        obj_tf = self.transform(T_surface_ori_obj)
+        T_obj_surface_ori = T_obj_surface.copy()
+        T_obj_surface_ori.translation = np.zeros(3)
+        obj_tf = self.transform(T_obj_surface_ori)
         mn, mx = obj_tf.bounding_box()
 
         z=mn[2]
         x0 = np.array([0,0,-z+delta])
 
-        T_surface_obj = RigidTransform(rotation=T_surface_ori_obj.rotation,
+        T_obj_surface = RigidTransform(rotation=T_obj_surface_ori.rotation,
                                        translation=x0, from_frame='obj',
                                        to_frame='surface')
-        return T_surface_obj
+        return T_obj_surface
 
     def rescale_dimension(self, scale, scaling_type=ScalingTypeMin):
         """Rescales the vertex coordinates to scale using the given scaling_type.
@@ -847,14 +848,14 @@ class Mesh3D(object):
 
         return stable_poses
 
-    def resting_pose(self, T_obj_table, eps=1e-10):
+    def resting_pose(self, T_obj_world, eps=1e-10):
         """ Returns the stable pose that the mesh will rest on if it lands
         on an infinite planar worksurface quasi-statically in the given
         transformation (only the rotation is used).
 
         Parameters
         ----------
-        T_obj_table : :obj:`core.RigidTransform`
+        T_obj_world : :obj:`core.RigidTransform`
             transformation from object to table basis (z-axis upward) specifying the orientation of the mesh
         eps : float
             numeric tolerance in cone projection solver
@@ -864,15 +865,12 @@ class Mesh3D(object):
         :obj:`StablePose`
             stable pose specifying the face that the mesh will land on
         """
-        # TODO: remove
-        import IPython
-
         # compute face dag if necessary
         if self.face_dag_ is None:
             self._compute_face_dag()
 
         # adjust transform to place mesh in contact with table
-        T_obj_table = self.get_T_surface_obj(T_obj_table, delta=0.0)
+        T_obj_table = self.get_T_surface_obj(T_obj_world, delta=0.0)
 
         # transform mesh
         cvh_mesh = self.face_dag_.mesh 
@@ -923,8 +921,19 @@ class Mesh3D(object):
 
                 # exit loop with topple tri if found
                 if np.all(alpha >= 0):
-                    topple_tri = neighboring_tri
-                    break
+                    tri_normal = cvh_mesh._compute_basis([cvh_verts[i] for i in neighboring_tri])[2,:]
+                    if tri_normal[2] < 0:
+                        tri_normal = -tri_normal
+
+                    # check whether lower
+                    lower = True
+                    tri_center = np.mean([vertices_tf[i] for i in neighboring_tri], axis=0)
+                    if topple_tri is not None:
+                        topple_tri_center = np.mean([vertices_tf[i] for i in topple_tri], axis=0)
+                        lower = (tri_normal.dot(topple_tri_center-tri_center) > 0)
+                    if lower:
+                        topple_tri = neighboring_tri
+
             except np.linalg.LinAlgError:
                 logging.warning('Failed to solve linear system')
 
@@ -945,8 +954,32 @@ class Mesh3D(object):
         # create stable pose
         resting_face = cur_node.face
         x0 = cvh_verts[vertex_ind]
-        r = cvh_mesh._compute_basis([cvh_verts[i] for i in resting_face])
-        return sp.StablePose(0.0, r, x0, face=resting_face)
+        R = cvh_mesh._compute_basis([cvh_verts[i] for i in resting_face])
+
+        # align with axes with the original pose
+        best_theta = 0
+        best_dot = 0
+        cur_theta = 0
+        delta_theta = 0.01
+        px = R[:,0].copy()
+        px[2] = 0
+        py = R[:,1].copy()
+        py[2] = 0
+        align_x = True
+        if np.linalg.norm(py) > np.linalg.norm(px):
+            align_x = False
+        while cur_theta <= 2*np.pi:
+            Rz = RigidTransform.z_axis_rotation(cur_theta)
+            Rp = Rz.dot(R)
+            dot_prod = Rp[:,0].dot(T_obj_world.x_axis)
+            if not align_x:
+                dot_prod = Rp[:,1].dot(T_obj_world.y_axis)
+            if dot_prod > best_dot:
+                best_dot = dot_prod
+                best_theta = cur_theta
+            cur_theta += delta_theta
+        R = RigidTransform.z_axis_rotation(best_theta).dot(R)
+        return sp.StablePose(0.0, R, x0, face=resting_face)
 
     def merge(self, other_mesh):
         """ Combines this mesh with another mesh.
