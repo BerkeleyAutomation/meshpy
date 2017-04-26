@@ -1336,7 +1336,8 @@ class Mesh3D(object):
 
         # Ensure that all vertices are on the positive halfspace (aka above the table)
         dot_product = (self.vertices - centroid).dot(z_o)
-        if dot_product[0] < 0:
+        dot_product[np.abs(dot_product) < 1e-10] = 0.0
+        if np.any(dot_product < 0):
             z_o = -z_o
 
         x_o = np.array([-z_o[1], z_o[0], 0])
