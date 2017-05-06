@@ -12,7 +12,7 @@
 
 // global rending constants
 float near = 0.05f;
-float far = 1e8f;
+float far = 1e2f;
 float scale = (0x0001) << 0;
 
 void uint2uchar(unsigned int in, unsigned char* out){
