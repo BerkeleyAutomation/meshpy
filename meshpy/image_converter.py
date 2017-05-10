@@ -3,6 +3,7 @@ Classes to convert binary images to extruded meshes
 Author: Jeff Mahler
 """
 import IPython
+import logging
 import numpy as np
 import os
 from PIL import Image, ImageDraw
@@ -63,9 +64,6 @@ class ImageToMeshConverter:
 
         # connect boundaries
         boundary_im = binary_im.boundary_map()
-        #plt.figure()
-        #plt.imshow(boundary_im.data)
-        #plt.show()
         ImageToMeshConverter.add_boundary_tris(boundary_im, verts, tris, front_ind_map, back_ind_map)
 
         # convert to mesh and clean
@@ -140,9 +138,11 @@ class ImageToMeshConverter:
         :obj:`ValueError`
             triangulation failed
         """
+        # TODO: fix multiple connected comps
+
         # setup variables for boundary coords
         upper_bound = np.iinfo(np.uint8).max
-        remaining_boundary = boundary_im.data
+        remaining_boundary = boundary_im.data.copy()
         boundary_ind = np.where(remaining_boundary == upper_bound)
         boundary_coords = zip(boundary_ind[0], boundary_ind[1])
         if len(boundary_coords) == 0:
@@ -154,93 +154,99 @@ class ImageToMeshConverter:
         another_visit_avail = True
 
         # make sure to start with a reffed tri
-        reffed = False
         visited_marker = 128
+        finished = False
+        it = 0
         i = 0
-        while not reffed and i < len(boundary_coords):
-            cur_coord = boundary_coords[i]
-            visited_map[cur_coord[0], cur_coord[1]] = 1
-            front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
-            back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
-            ref_tris = np.where(tris_arr == front_ind)
-            ref_tris = ref_tris[0]
-            reffed = (ref_tris.shape[0] > 0)
-            remaining_boundary[cur_coord[0], cur_coord[1]] = visited_marker
-            i = i+1
+        coord_visits = []
 
-        coord_visits = [cur_coord]
-        cur_dir_angle = np.pi / 2 # start straight down
+        while not finished:
+            finished = True
+            logging.info('Boundary triangulation iter %d' %(it))
+            reffed = False
+            while not reffed and i < len(boundary_coords):
+                cur_coord = boundary_coords[i]
+                if visited_map[cur_coord[0], cur_coord[1]] == 0:
+                    visited_map[cur_coord[0], cur_coord[1]] = 1
+                    front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
+                    back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
+                    ref_tris = np.where(tris_arr == front_ind)
+                    ref_tris = ref_tris[0]
+                    reffed = (ref_tris.shape[0] > 0)
+                    remaining_boundary[cur_coord[0], cur_coord[1]] = visited_marker
+                i = i+1
 
-        # loop around boundary and add faces connecting front and back
-        while another_visit_avail:
-            front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
-            back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
-            ref_tris = np.where(tris_arr == front_ind)
-            ref_tris = ref_tris[0]
-            num_reffing_tris = ref_tris.shape[0]
-            
-            # get all possible cadidates from neighboring tris
-            another_visit_avail = False
-            candidate_next_coords = []
-            for i in xrange(num_reffing_tris):
-                reffing_tri = tris[ref_tris[i]]
-                for j in xrange(3):
-                    v = verts[reffing_tri[j]]
-                    if boundary_im[v[0], v[1]] == upper_bound and visited_map[v[0], v[1]] == 0:
-                        candidate_next_coords.append([v[0], v[1]])
-                        another_visit_avail = True
+            coord_visits.extend([cur_coord])
+            cur_dir_angle = np.pi / 2 # start straight down
 
-            # get the "rightmost" next point
-            num_candidates = len(candidate_next_coords)
-            if num_candidates > 0:
-                # calculate candidate directions
-                directions = []
-                next_dirs = np.array(candidate_next_coords) - np.array(cur_coord)
-                dir_norms = np.linalg.norm(next_dirs, axis = 1)
-                next_dirs = next_dirs / np.tile(dir_norms, [2, 1]).T
+            # loop around boundary and add faces connecting front and back
+            while another_visit_avail:
+                front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
+                back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
+                ref_tris = np.where(tris_arr == front_ind)
+                ref_tris = ref_tris[0]
+                num_reffing_tris = ref_tris.shape[0]
+                
+                # get all possible cadidates from neighboring tris
+                another_visit_avail = False
+                candidate_next_coords = []
+                for i in xrange(num_reffing_tris):
+                    reffing_tri = tris[ref_tris[i]]
+                    for j in xrange(3):
+                        v = verts[reffing_tri[j]]
+                        if boundary_im[v[0], v[1]] == upper_bound and visited_map[v[0], v[1]] == 0:
+                            candidate_next_coords.append([v[0], v[1]])
+                            another_visit_avail = True
 
-                # calculate angles relative to positive x axis
-                new_angles = np.arctan(next_dirs[:,0] / next_dirs[:,1])
-                negative_ind = np.where(next_dirs[:,1] < 0)
-                negative_ind = negative_ind[0]
-                new_angles[negative_ind] = new_angles[negative_ind] + np.pi
+                # get the "rightmost" next point
+                num_candidates = len(candidate_next_coords)
+                if num_candidates > 0:
+                    # calculate candidate directions
+                    directions = []
+                    next_dirs = np.array(candidate_next_coords) - np.array(cur_coord)
+                    dir_norms = np.linalg.norm(next_dirs, axis = 1)
+                    next_dirs = next_dirs / np.tile(dir_norms, [2, 1]).T
+                    
+                    # calculate angles relative to positive x axis
+                    new_angles = np.arctan(next_dirs[:,0] / next_dirs[:,1])
+                    negative_ind = np.where(next_dirs[:,1] < 0)
+                    negative_ind = negative_ind[0]
+                    new_angles[negative_ind] = new_angles[negative_ind] + np.pi
 
-                # compute difference in angles
-                angle_diff = new_angles - cur_dir_angle
-                correction_ind = np.where(angle_diff <= -np.pi)
-                correction_ind = correction_ind[0]
-                angle_diff[correction_ind] = angle_diff[correction_ind] + 2 * np.pi
+                    # compute difference in angles
+                    angle_diff = new_angles - cur_dir_angle
+                    correction_ind = np.where(angle_diff <= -np.pi)
+                    correction_ind = correction_ind[0]
+                    angle_diff[correction_ind] = angle_diff[correction_ind] + 2 * np.pi
+                    
+                    # choose the next coordinate with the maximum angle diff (rightmost)
+                    next_ind = np.where(angle_diff == np.max(angle_diff))
+                    next_ind = next_ind[0]
 
-                # choose the next coordinate with the maximum angle diff (rightmost)
-                next_ind = np.where(angle_diff == np.max(angle_diff))
-                next_ind = next_ind[0]
+                    cur_coord = candidate_next_coords[next_ind[0]]
+                    cur_dir_angle = new_angles[next_ind[0]]
 
-                cur_coord = candidate_next_coords[next_ind[0]]
-                cur_dir_angle = new_angles[next_ind[0]]
+                    # add triangles (only add if there is a new candidate)
+                    next_front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
+                    next_back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
+                    tris.append([int(front_ind), int(back_ind), int(next_front_ind)])
+                    tris.append([int(back_ind), int(next_back_ind), int(next_front_ind)])
 
-                # add triangles (only add if there is a new candidate)
-                next_front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
-                next_back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
-                tris.append([int(front_ind), int(back_ind), int(next_front_ind)])
-                tris.append([int(back_ind), int(next_back_ind), int(next_front_ind)])
+                    # mark coordinate as visited
+                    visited_map[cur_coord[0], cur_coord[1]] = 1
+                    coord_visits.append(cur_coord)
+                    remaining_boundary[cur_coord[0], cur_coord[1]] = visited_marker
 
-                # mark coordinate as visited
-                visited_map[cur_coord[0], cur_coord[1]] = 1
-                coord_visits.append(cur_coord)
-                remaining_boundary[cur_coord[0], cur_coord[1]] = visited_marker
+            # add edge back to first coord
+            cur_coord = coord_visits[0]
+            next_front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
+            next_back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
+            tris.append([int(front_ind), int(back_ind), int(next_front_ind)])
+            tris.append([int(back_ind), int(next_back_ind), int(next_front_ind)])
 
-        # add edge back to first coord
-        cur_coord = coord_visits[0]
-        next_front_ind = front_ind_map[cur_coord[0], cur_coord[1]]
-        next_back_ind = back_ind_map[cur_coord[0], cur_coord[1]]
-        tris.append([int(front_ind), int(back_ind), int(next_front_ind)])
-        tris.append([int(back_ind), int(next_back_ind), int(next_front_ind)])
-
-        # check success 
-        success = (np.sum(remaining_boundary == upper_bound) == 0)
-        if not success:
-            raise ValueError('Multiple connected components')
-
+            # check success 
+            finished = (np.sum(remaining_boundary == upper_bound) == 0) or (i == len(boundary_coords))
+            it += 1
 
     @staticmethod
     def create_mesh_face(occ_coords, depth, index_shape, cw=True):
