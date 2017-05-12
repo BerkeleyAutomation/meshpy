@@ -731,6 +731,9 @@ class Sdf3D(Sdf):
                 t_zc = possible_t[i]
 
         # if no positive roots find min
+        if np.abs(w[0]) < 1e-10:
+            return None
+
         if t_zc is None:
             t_zc = -w[1] / (2 * w[0])
 

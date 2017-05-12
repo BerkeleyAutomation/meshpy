@@ -811,7 +811,7 @@ class Mesh3D(object):
         hull = ss.ConvexHull(self.vertices_)
         hull_tris = hull.simplices
         # TODO do normals properly...
-        cvh_mesh = Mesh3D(np.copy(self.vertices_), np.copy(hull_tris))#, self.normals_)
+        cvh_mesh = Mesh3D(np.copy(self.vertices_), np.copy(hull_tris), center_of_mass=self.center_of_mass_)
         cvh_mesh.remove_unreferenced_vertices()
         return cvh_mesh
 

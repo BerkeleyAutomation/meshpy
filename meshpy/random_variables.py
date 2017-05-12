@@ -254,12 +254,12 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         # viewsphere params
         self.min_radius = config['min_radius']
         self.max_radius = config['max_radius']
-        self.min_az = config['min_az'] * np.pi
-        self.max_az = config['max_az'] * np.pi
-        self.min_elev = config['min_elev'] * np.pi
-        self.max_elev = config['max_elev'] * np.pi
-        self.min_roll = config['min_roll'] * np.pi
-        self.max_roll = config['max_roll'] * np.pi
+        self.min_az = np.deg2rad(config['min_az'])
+        self.max_az = np.deg2rad(config['max_az'])
+        self.min_elev = np.deg2rad(config['min_elev'])
+        self.max_elev = np.deg2rad(config['max_elev'])
+        self.min_roll = np.deg2rad(config['min_roll'])
+        self.max_roll = np.deg2rad(config['max_roll'])
 
         # params of translation in plane
         self.min_x = config['min_x']
