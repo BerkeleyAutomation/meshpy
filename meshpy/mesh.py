@@ -1100,7 +1100,7 @@ class Mesh3D(object):
         float
             The mass of the mesh.
         """
-        return self.density_ * self.get_total_volume()
+        return self.density_ * self.total_volume()
 
     def _compute_inertia(self):
         """Computes the mesh inertia matrix.
