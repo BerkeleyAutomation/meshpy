@@ -15,6 +15,20 @@ float near = 0.05f;
 float far = 1e2f;
 float scale = (0x0001) << 0;
 
+// offsets for reading material buffers
+int mat_ambient_off = 3;
+int mat_diffuse_off = mat_ambient_off + 4;
+int mat_specular_off = mat_diffuse_off + 4;
+int mat_shininess_off = mat_specular_off + 4;
+
+// offsets for reading lighting buffers
+int light_ambient_off = 0;
+int light_diffuse_off = light_ambient_off + 4;
+int light_specular_off = light_diffuse_off + 4;
+int light_position_off = light_specular_off + 4;
+int light_direction_off = light_position_off + 3;
+int light_spot_cutoff_off = light_direction_off + 3;
+
 void uint2uchar(unsigned int in, unsigned char* out){
   out[0] = (in & 0x00ff0000) >> 16;
   out[1] = (in & 0x0000ff00) >> 8;
@@ -26,6 +40,9 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
                                  unsigned int im_width,
                                  boost::python::numeric::array verts,
                                  boost::python::numeric::array tris,
+                                 boost::python::numeric::array norms,
+                                 boost::python::numeric::array mat_props,
+                                 boost::python::numeric::array light_props,
                                  bool debug = false)
 {
   // init rendering vars
@@ -40,20 +57,45 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   int num_projections = boost::python::len(proj_matrices);
   long int verts_buflen;
   long int tris_buflen;
+  long int norms_buflen;
+  long int mat_props_buflen;
+  long int light_props_buflen;
   void const *verts_raw_buffer;
   void const *tris_raw_buffer;
+  void const *norms_raw_buffer;
+  void const *mat_props_raw_buffer;
+  void const *light_props_raw_buffer;
+
+  // read numpy buffers
   bool verts_readbuf_success = !PyObject_AsReadBuffer(verts.ptr(), &verts_raw_buffer, &verts_buflen);
   bool tris_readbuf_success = !PyObject_AsReadBuffer(tris.ptr(), &tris_raw_buffer, &tris_buflen);
+  bool norms_readbuf_success = !PyObject_AsReadBuffer(norms.ptr(), &norms_raw_buffer, &norms_buflen);
+  bool mat_props_readbuf_success = !PyObject_AsReadBuffer(mat_props.ptr(), &mat_props_raw_buffer, &mat_props_buflen);
+  bool light_props_readbuf_success = !PyObject_AsReadBuffer(light_props.ptr(), &light_props_raw_buffer, &light_props_buflen);
+
+  // cast numpy buffers to C arrays
   const double* verts_buffer = reinterpret_cast<const double*>(verts_raw_buffer);
   const unsigned int* tris_buffer = reinterpret_cast<const unsigned int*>(tris_raw_buffer);
-  double final_matrix[16];
-  unsigned char colorBytes[3] = {255, 255, 255}; // all white
+  const double* norms_buffer = reinterpret_cast<const double*>(norms_raw_buffer);
+  const double* mat_props_buffer = reinterpret_cast<const double*>(mat_props_raw_buffer);
+  const double* light_props_buffer = reinterpret_cast<const double*>(light_props_raw_buffer);
 
+  // read color
+  double final_matrix[16];
+  unsigned char colorBytes[3];
+  colorBytes[0] = (unsigned char)mat_props_buffer[0];
+  colorBytes[1] = (unsigned char)mat_props_buffer[1];
+  colorBytes[2] = (unsigned char)mat_props_buffer[2];
+
+  // compute num vertices
   unsigned int num_verts = verts_buflen / (3 * sizeof(double));
   unsigned int num_tris = tris_buflen / (3 * sizeof(unsigned int));
+  unsigned int num_norms = norms_buflen / (3 * sizeof(double));
   if (debug) {
     std::cout << "Num vertices " << num_verts << std::endl;
     std::cout << "Num tris " << num_tris << std::endl;
+    std::cout << "Num norms " << num_norms << std::endl;
+    std::cout << "Color " << (int)colorBytes[0] << " " << (int)colorBytes[1] << " " << (int)colorBytes[2] << std::endl;
   }
 
   // create an RGBA-mode context
@@ -74,6 +116,86 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   }
   OSMesaPixelStore(OSMESA_Y_UP, 0);     
   
+  // setup material properties
+  // GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 0.0 };
+  // GLfloat mat_shininess[] = { 50.0 };
+  GLfloat mat_ambient[4];
+  GLfloat mat_diffuse[4];
+  GLfloat mat_specular[4];
+  GLfloat mat_shininess[1];
+  mat_ambient[0] = (GLfloat)mat_props_buffer[mat_ambient_off + 0];
+  mat_ambient[1] = (GLfloat)mat_props_buffer[mat_ambient_off + 1];
+  mat_ambient[2] = (GLfloat)mat_props_buffer[mat_ambient_off + 2];
+  mat_ambient[3] = (GLfloat)mat_props_buffer[mat_ambient_off + 3];
+
+  mat_diffuse[0] = (GLfloat)mat_props_buffer[mat_diffuse_off + 0];
+  mat_diffuse[1] = (GLfloat)mat_props_buffer[mat_diffuse_off + 1];
+  mat_diffuse[2] = (GLfloat)mat_props_buffer[mat_diffuse_off + 2];
+  mat_diffuse[3] = (GLfloat)mat_props_buffer[mat_diffuse_off + 3];
+
+  mat_specular[0] = (GLfloat)mat_props_buffer[mat_specular_off + 0];
+  mat_specular[1] = (GLfloat)mat_props_buffer[mat_specular_off + 1];
+  mat_specular[2] = (GLfloat)mat_props_buffer[mat_specular_off + 2];
+  mat_specular[3] = (GLfloat)mat_props_buffer[mat_specular_off + 3];
+
+  mat_shininess[0] = (GLfloat)mat_props_buffer[mat_shininess_off + 0];
+
+  glClearColor (0.0, 0.0, 0.0, 0.0);
+  glShadeModel (GL_SMOOTH);
+  glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+  glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+  glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+  // setup lighting properties
+  //GLfloat light_position[] = { 0.0, 0.0, -10.0, 0.0 };
+  GLfloat light_ambient[4];
+  GLfloat light_diffuse[4];
+  GLfloat light_specular[4];
+  GLfloat light_position[3];
+  GLfloat light_direction[3];
+  GLfloat light_spot_cutoff[1];
+
+  light_ambient[0] = (GLfloat)light_props_buffer[light_ambient_off + 0];
+  light_ambient[1] = (GLfloat)light_props_buffer[light_ambient_off + 1];
+  light_ambient[2] = (GLfloat)light_props_buffer[light_ambient_off + 2];
+  light_ambient[3] = (GLfloat)light_props_buffer[light_ambient_off + 3];
+
+  light_diffuse[0] = (GLfloat)light_props_buffer[light_diffuse_off + 0];
+  light_diffuse[1] = (GLfloat)light_props_buffer[light_diffuse_off + 1];
+  light_diffuse[2] = (GLfloat)light_props_buffer[light_diffuse_off + 2];
+  light_diffuse[3] = (GLfloat)light_props_buffer[light_diffuse_off + 3];
+
+  light_specular[0] = (GLfloat)light_props_buffer[light_specular_off + 0];
+  light_specular[1] = (GLfloat)light_props_buffer[light_specular_off + 1];
+  light_specular[2] = (GLfloat)light_props_buffer[light_specular_off + 2];
+  light_specular[3] = (GLfloat)light_props_buffer[light_specular_off + 3];
+
+  light_position[0] = (GLfloat)light_props_buffer[light_position_off + 0];
+  light_position[1] = (GLfloat)light_props_buffer[light_position_off + 1];
+  light_position[2] = (GLfloat)light_props_buffer[light_position_off + 2];
+
+  light_direction[0] = (GLfloat)light_props_buffer[light_direction_off + 0];
+  light_direction[1] = (GLfloat)light_props_buffer[light_direction_off + 1];
+  light_direction[2] = (GLfloat)light_props_buffer[light_direction_off + 2];
+
+  light_spot_cutoff[0] = (GLfloat)light_props_buffer[light_spot_cutoff_off + 0];
+
+  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+  glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
+  glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, light_spot_cutoff);
+
+  // enable lighting
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+
+  // set color
+  glColorMaterial(GL_FRONT, GL_DIFFUSE);
+  glEnable(GL_COLOR_MATERIAL);
+
   // setup rendering
   glEnable(GL_DEPTH_TEST);   
   glDisable(GL_CULL_FACE);
@@ -142,8 +264,11 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
       unsigned int b = tris_buffer[3*i + 1];
       unsigned int c = tris_buffer[3*i + 2];
 
+      glNormal3dv(&norms_buffer[3 * a]);
       glVertex3dv(&verts_buffer[3 * a]);
+      glNormal3dv(&norms_buffer[3 * b]);
       glVertex3dv(&verts_buffer[3 * b]);
+      glNormal3dv(&norms_buffer[3 * c]);
       glVertex3dv(&verts_buffer[3 * c]);
       glEnd();
     }

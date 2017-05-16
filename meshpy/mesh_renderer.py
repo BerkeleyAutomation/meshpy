@@ -17,6 +17,7 @@ except:
 from core import Point, RigidTransform
 from core.utils import sph2cart, cart2sph
 from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
+from meshpy import MaterialProperties, LightingProperties
 
 class ViewsphereDiscretizer(object):
     """Set of parameters for automatically rendering a set of images from virtual
@@ -421,7 +422,8 @@ class VirtualCamera(object):
         """
         self._scene[name] = None
 
-    def images(self, mesh, object_to_camera_poses, debug=False):
+    def images(self, mesh, object_to_camera_poses,
+               mat_props=None, light_props=None, debug=False):
         """Render images of the given mesh at the list of object to camera poses.
 
         Parameters
@@ -448,6 +450,19 @@ class VirtualCamera(object):
         # get mesh spec as numpy arrays
         vertex_arr = mesh.vertices
         tri_arr = mesh.triangles.astype(np.int32)
+        if mesh.normals is None:
+            mesh.compute_vertex_normals()
+        norms_arr = mesh.normals
+
+        # set default material properties
+        if mat_props is None:
+            mat_props = MaterialProperties()
+            mat_props_arr = mat_props.arr
+
+        # set default light properties
+        if light_props is None:
+            light_props = LightingProperties()
+            light_props_arr = light_props.arr
 
         # generate set of projection matrices
         projections = []
@@ -460,11 +475,14 @@ class VirtualCamera(object):
         # render images for each
         render_start = time.time()
         binary_ims, depth_ims = meshrender.render_mesh(projections,
-                                                      self._camera_intr.height,
-                                                      self._camera_intr.width,
-                                                      vertex_arr,
-                                                      tri_arr,
-                                                      debug)
+                                                       self._camera_intr.height,
+                                                       self._camera_intr.width,
+                                                       vertex_arr,
+                                                       tri_arr,
+                                                       norms_arr,
+                                                       mat_props_arr,
+                                                       light_props_arr,
+                                                       debug)
         render_stop = time.time()
         logging.debug('Rendering took %.3f sec' %(render_stop - render_start))
 
@@ -536,7 +554,7 @@ class VirtualCamera(object):
                 object_to_camera_poses.append(T_stp_camera.dot(T_obj_stp))
 
         # render both image types (doesn't really cost any time)
-        binary_ims, depth_ims = self.images(mesh, object_to_camera_poses)
+        binary_ims, depth_ims = self.images(mesh, object_to_camera_poses, debug=debug)
 
         # convert to image wrapper classes
         images = []
@@ -544,6 +562,11 @@ class VirtualCamera(object):
             # wrap binary images
             for binary_im in binary_ims:
                 images.append(BinaryImage(binary_im[:,:,0], frame=self._camera_intr.frame))
+
+        elif render_mode == RenderMode.COLOR:
+            # wrap color images
+            for color_im in binary_ims:
+                images.append(ColorImage(color_im, frame=self._camera_intr.frame))
 
         elif render_mode == RenderMode.DEPTH:
             # render depth image
