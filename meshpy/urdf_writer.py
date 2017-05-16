@@ -109,9 +109,20 @@ class UrdfWriter(object):
         Returns
         -------
         :obj:`str`
-            The full path to the URDF directory associated with this reader/writer.
+            The full path to the URDF directory associated with this writer.
         """
         return self.filepath_
+
+    @property
+    def urdf_filename(self):
+        """Returns the full path to the URDF file associated with this writer.
+
+        Returns
+        -------
+        :obj:`str`
+            The full path to the URDF file associated with this writer.
+        """
+        return os.path.join(self.filepath_, '%s.urdf' %(self.name_))
 
     def write(self, mesh):
         """Writes a Mesh3D object to a .urdf file.
@@ -217,9 +228,8 @@ class UrdfWriter(object):
             prev_piece_name = piece_name
                 
         # write URDF file
-        urdf_filename = os.path.join(out_dir, '%s.urdf' %(self.name_))
         tree = et.ElementTree(root)
-        tree.write(urdf_filename)
+        tree.write(self.urdf_filename)
     
         # write config file
         root = et.Element('model')
@@ -228,7 +238,7 @@ class UrdfWriter(object):
         version = et.SubElement(root, 'version')
         version.text = '1.0'
         sdf = et.SubElement(root, 'sdf', version='1.4')
-        urdf_root, urdf_ext = os.path.splitext(urdf_filename)
+        urdf_root, urdf_ext = os.path.splitext(self.urdf_filename)
         urdf_path, urdf_name = os.path.split(urdf_root)
         sdf.text = urdf_name
         
