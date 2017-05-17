@@ -17,7 +17,7 @@ except:
 
 from core import Point, RigidTransform
 from core.utils import sph2cart, cart2sph
-from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
+from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, RgbdImage, ObjectRender, RenderMode
 from meshpy import MaterialProperties, LightingProperties
 
 class ViewsphereDiscretizer(object):
@@ -632,10 +632,38 @@ class VirtualCamera(object):
                 for j, name in enumerate(depth_scene_ims.keys()):
                     images[i] = images[i].combine_with(depth_scene_ims[name][i].image)
 
+        elif render_mode == RenderMode.RGBD:
+            # create RGB-D images
+            for color_im, depth_im in zip(color_ims, depth_ims):
+                c = ColorImage(color_im, frame=self._camera_intr.frame)
+                d = DepthImage(depth_im, frame=self._camera_intr.frame)
+                images.append(RgbdImage.from_color_and_depth(c, d))
+
+        elif render_mode == RenderMode.RGBD_SCENE:
+            # create RGB-D images
+            for color_im, depth_im in zip(color_ims, depth_ims):
+                c = ColorImage(color_im, frame=self._camera_intr.frame)
+                d = DepthImage(depth_im, frame=self._camera_intr.frame)
+                images.append(RgbdImage.from_color_and_depth(c, d))
+
+            # render images of scene objects
+            rgbd_scene_ims = {}
+            for name, scene_obj in self._scene.iteritems():
+                scene_object_to_camera_poses = []
+                for world_to_camera_pose in world_to_camera_poses:
+                    scene_object_to_camera_poses.append(world_to_camera_pose * scene_obj.T_mesh_world)
+
+                rgbd_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.RGBD, mat_props=scene_obj.mat_props, light_props=light_props, debug=debug)
+
+           # combine with scene images
+            for i in range(len(images)):
+                for j, name in enumerate(rgbd_scene_ims.keys()):
+                    images[i] = images[i].combine_with(rgbd_scene_ims[name][i].image)
+
         elif render_mode == RenderMode.SCALED_DEPTH:
             # convert to color image
             for depth_im in depth_ims:
-                d = DepthImage(depth_im, frame='camera')
+                d = DepthImage(depth_im, frame=self._camera_intr.frame)
                 images.append(d.to_color())
         else:
             raise ValueError('Render mode %s not supported')
