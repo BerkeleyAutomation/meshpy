@@ -558,6 +558,7 @@ class Mesh3D(object):
     def compute_vertex_normals(self):
         """ Get normals from triangles"""
         normals = []
+        # weighted average of triangle normal for each vertex
         for i in range(len(self.vertices)):
             inds = np.where(self.triangles == i)
             tris = self.triangles[inds[0],:]
@@ -604,6 +605,7 @@ class Mesh3D(object):
                 # www.bytehazard.com/articles/vertnorm.html
                 normal += w_area * w_angle * n
 
+            # normalize
             if np.linalg.norm(normal) == 0:
                 normal = np.array([1,0,0])
             normal = normal / np.linalg.norm(normal)
