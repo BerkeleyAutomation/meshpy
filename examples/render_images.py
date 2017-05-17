@@ -12,7 +12,7 @@ import sys
 import time
 
 import core.utils as utils
-from core import RigidTransform
+from core import NormalCloud, PointCloud, RigidTransform
 from perception import CameraIntrinsics, ObjectRender, RenderMode
 from meshpy import MaterialProperties, LightingProperties, ObjFile, VirtualCamera, ViewsphereDiscretizer, SceneObject
 
@@ -26,6 +26,8 @@ if __name__ == '__main__':
     parser.add_argument('mesh_filename', type=str, help='filename for .OBJ mesh file to render')
     args = parser.parse_args()
 
+    vis_normals = True
+
     # read data
     mesh_filename = args.mesh_filename
     _, mesh_ext = os.path.splitext(mesh_filename)
@@ -33,13 +35,21 @@ if __name__ == '__main__':
         raise ValueError('Must provide mesh in Wavefront .OBJ format!') 
     orig_mesh = ObjFile(mesh_filename).read()
     mesh = orig_mesh.subdivide(min_tri_length=0.01)
+    mesh.compute_vertex_normals()
     stable_poses = mesh.stable_poses()
+
+    if vis_normals:
+        vis3d.figure()
+        vis3d.mesh(mesh)
+        vis3d.normals(NormalCloud(mesh.normals.T), PointCloud(mesh.vertices.T), subsample=10)
+        vis3d.show()
 
     d = utils.sqrt_ceil(len(stable_poses))
     vis.figure(size=(16,16))
 
     table_mesh = ObjFile('data/meshes/table.obj').read()
     table_mesh = table_mesh.subdivide()
+    table_mesh.compute_vertex_normals()
     table_mat_props = MaterialProperties(color=(0,255,0),
                                          ambient=0.5,
                                          diffuse=1.0,
@@ -81,8 +91,6 @@ if __name__ == '__main__':
         for name, scene_obj in scene_objs.iteritems():
             virtual_camera.add_to_scene(name, scene_obj)
         
-        #mesh = mesh.merge(table_mesh.transform(T_obj_world.inverse()))
-
         # camera pose
         cam_dist = 0.3
         T_camera_world = RigidTransform(rotation=np.array([[0, 1, 0],

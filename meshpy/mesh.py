@@ -563,30 +563,78 @@ class Mesh3D(object):
             tris = self.triangles[inds[0],:]
             normal = np.zeros(3)
             for tri in tris:
+                # compute triangle normal
                 t = self.vertices[tri, :]
                 v0 = t[1,:] - t[0,:]
                 v1 = t[2,:] - t[0,:]
+                if np.linalg.norm(v0) == 0:
+                    continue
                 v0 = v0 / np.linalg.norm(v0)
+                if np.linalg.norm(v1) == 0:
+                    continue
                 v1 = v1 / np.linalg.norm(v1)
                 n = np.cross(v0, v1)
+                if np.linalg.norm(n) == 0:
+                    continue
                 n = n / np.linalg.norm(n)
-                w = self._area_of_tri(tri)
-                normal += w * n
+
+                # compute weight by area of triangle
+                w_area = self._area_of_tri(tri)
+
+                # compute weight by edge angle
+                vertex_ind = np.where(tri == i)[0][0]
+                if vertex_ind == 0:
+                    e0 = t[1,:] - t[0,:]
+                    e1 = t[2,:] - t[0,:]
+                elif vertex_ind == 1:
+                    e0 = t[0,:] - t[1,:]
+                    e1 = t[2,:] - t[1,:]
+                elif vertex_ind == 2:
+                    e0 = t[0,:] - t[2,:]
+                    e1 = t[1,:] - t[2,:]
+                if np.linalg.norm(e0) == 0:
+                    continue
+                if np.linalg.norm(e1) == 0:
+                    continue
+                e0 = e0 / np.linalg.norm(e0)
+                e1 = e1 / np.linalg.norm(e1)
+                w_angle = np.arccos(e0.dot(e1))
+
+                # weighted update
+                # www.bytehazard.com/articles/vertnorm.html
+                normal += w_area * w_angle * n
+
+            if np.linalg.norm(normal) == 0:
+                normal = np.array([1,0,0])
             normal = normal / np.linalg.norm(normal)
             normals.append(normal)
 
-        # Reverse normals based on alignment with convex hull
-        hull = ss.ConvexHull(self.vertices_)
-        hull_tris = hull.simplices.tolist()
-        hull_vertex_ind = hull_tris[0][0]
-        hull_vertex = self.vertices[hull_vertex_ind]
-        hull_vertex_normal = normals[hull_vertex_ind]
-        v = np.array(hull_vertex).reshape([1,3])
-        n = np.array(hull_vertex_normal)
-        ip = (self.vertices - np.tile(hull_vertex, [self.vertices.shape[0], 1])).dot(n)
-        if ip[0] > 0:
-            normals = [[-n[0], -n[1], -n[2]] for n in normals]
+        # set numpy array
         self.normals = np.array(normals)
+
+        # reverse normals based on alignment with convex hull
+        hull = ss.ConvexHull(self.vertices)
+        hull_tris = hull.simplices.tolist()
+        hull_vertex_inds = np.unique(hull_tris)
+
+        num_aligned = 0
+        num_misaligned = 0
+        for hull_vertex_ind in hull_vertex_inds:
+            hull_vertex = self.vertices[hull_vertex_ind, :]
+            hull_vertex_normal = normals[hull_vertex_ind]
+            ip = (hull_vertex - self.vertices).dot(hull_vertex_normal)
+            num_aligned += np.sum(ip > 0)
+            num_misaligned += np.sum(ip <= 0)
+
+        if num_misaligned > num_aligned:
+            self.normals = -self.normals
+
+    def flip_normals(self):
+        """ Flips the mesh normals. """
+        if self.normals is not None:
+            self.normals = -self.normals
+            return True
+        return False
         
     def scale_principal_eigenvalues(self, new_evals):
         self.normalize_vertices()
