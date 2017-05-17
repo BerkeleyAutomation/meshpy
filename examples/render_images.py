@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
 
     # create lighting props
-    T_light_camera = RigidTransform(translation=[0,-0.5,0],
+    T_light_camera = RigidTransform(translation=[0,0,0],
                                     from_frame='light',
                                     to_frame=camera_intr.frame)
     light_props = LightingProperties(T_light_camera=T_light_camera)
@@ -57,6 +57,8 @@ if __name__ == '__main__':
                                        mat_props=MaterialProperties(color=np.array([0,255,0])))}
     for name, scene_obj in scene_objs.iteritems():
         virtual_camera.add_to_scene(name, scene_obj)
+
+    #mesh = mesh.merge(table_mesh.transform(T_obj_world.inverse()))
 
     # camera pose
     cam_dist = 0.25
@@ -79,7 +81,7 @@ if __name__ == '__main__':
     # render depth image
     renders = virtual_camera.wrapped_images(mesh,
                                             [T_obj_camera],
-                                            RenderMode.COLOR,
+                                            RenderMode.COLOR_SCENE,
                                             mat_props=mat_props,
                                             light_props=light_props,
                                             debug=True)

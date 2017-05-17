@@ -1011,7 +1011,7 @@ class Mesh3D(object):
             combined_normals = np.zeros([total_vertices, 3])
             combined_normals[:self.num_vertices, :] = self.normals
             combined_normals[self.num_vertices:, :] = other_mesh.normals
-        return Mesh3D(combined_vertices, combined_triangles, combined_normals)
+        return Mesh3D(combined_vertices, combined_triangles.astype(np.int32), combined_normals)
 
     def visualize(self, color=(0.5, 0.5, 0.5), style='surface', opacity=1.0):
         """Plots visualization of mesh using MayaVI.

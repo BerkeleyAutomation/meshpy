@@ -140,8 +140,8 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
 
   mat_shininess[0] = (GLfloat)mat_props_buffer[mat_shininess_off + 0];
 
-  glClearColor (0.0, 0.0, 0.0, 0.0);
-  glShadeModel (GL_SMOOTH);
+  glClearColor(0.0, 0.0, 0.0, 0.0);
+  glShadeModel(GL_SMOOTH);
   glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
   glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
   glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
