@@ -3,6 +3,7 @@ Class to render a set of images for a graspable objects
 Author: Jeff Mahler
 """
 import copy
+import IPython
 import logging
 import numpy as np
 import os
@@ -373,9 +374,11 @@ class PlanarWorksurfaceDiscretizer(object):
 
 class SceneObject(object):
     """ Struct to encapsulate objects added to a scene """
-    def __init__(self, mesh, T_mesh_world):
+    def __init__(self, mesh, T_mesh_world,
+                 mat_props=MaterialProperties()):
         self.mesh = mesh
         self.T_mesh_world = T_mesh_world
+        self.mat_props = mat_props
 
 class VirtualCamera(object):
     """A virtualized camera for rendering virtual color and depth images of meshes.
@@ -430,10 +433,12 @@ class VirtualCamera(object):
         ----------
         mesh : :obj:`Mesh3D`
             The mesh to be rendered.
-
         object_to_camera_poses : :obj:`list` of :obj:`RigidTransform`
             A list of object to camera transforms to render from.
-
+        mat_props : :obj:`MaterialProperties`
+            Material properties for the mesh
+        light_props : :obj:`MaterialProperties`
+            Lighting properties for the scene
         debug : bool
             Whether or not to debug the C++ meshrendering code.
 
@@ -457,48 +462,58 @@ class VirtualCamera(object):
         # set default material properties
         if mat_props is None:
             mat_props = MaterialProperties()
-            mat_props_arr = mat_props.arr
+        mat_props_arr = mat_props.arr
 
         # set default light properties
         if light_props is None:
             light_props = LightingProperties()
+
+        # render for each object to camera pose
+        # TODO: clean up interface, use modelview matrix!!!!
+        color_ims = []
+        depth_ims = []
+        render_start = time.time()
+        for T_obj_camera in object_to_camera_poses:
+            # form projection matrix
+            R = T_obj_camera.rotation
+            t = T_obj_camera.translation
+            P = self._camera_intr.proj_matrix.dot(np.c_[R, t])
+
+            # form light props
+            light_props.set_pose(T_obj_camera)
             light_props_arr = light_props.arr
 
-        # generate set of projection matrices
-        projections = []
-        for T_camera_obj in object_to_camera_poses:
-            R = T_camera_obj.rotation
-            t = T_camera_obj.translation
-            P = self._camera_intr.proj_matrix.dot(np.c_[R, t])
-            projections.append(P)
-
-        # render images for each
-        render_start = time.time()
-        binary_ims, depth_ims = meshrender.render_mesh(projections,
-                                                       self._camera_intr.height,
-                                                       self._camera_intr.width,
-                                                       vertex_arr,
-                                                       tri_arr,
-                                                       norms_arr,
-                                                       mat_props_arr,
-                                                       light_props_arr,
-                                                       debug)
+            # render images for each
+            c, d = meshrender.render_mesh([P],
+                                          self._camera_intr.height,
+                                          self._camera_intr.width,
+                                          vertex_arr,
+                                          tri_arr,
+                                          norms_arr,
+                                          mat_props_arr,
+                                          light_props_arr,
+                                          debug)
+            color_ims.extend(c)
+            depth_ims.extend(d)
         render_stop = time.time()
         logging.debug('Rendering took %.3f sec' %(render_stop - render_start))
 
-        return binary_ims, depth_ims
+        return color_ims, depth_ims
 
-    def images_viewsphere(self, mesh, vs_disc):
+    def images_viewsphere(self, mesh, vs_disc, mat_props=None, light_props=None):
         """Render images of the given mesh around a view sphere.
 
         Parameters
         ----------
         mesh : :obj:`Mesh3D`
             The mesh to be rendered.
-
         vs_disc : :obj:`ViewsphereDiscretizer`
             A discrete viewsphere from which we draw object to camera
             transforms.
+        mat_props : :obj:`MaterialProperties`
+            Material properties for the mesh
+        light_props : :obj:`MaterialProperties`
+            Lighting properties for the scene
 
         Returns
         -------
@@ -510,27 +525,29 @@ class VirtualCamera(object):
             contains floats and is of shape (height, width). Each pixel is a
             single float that represents the depth of the image.
         """
-        return self.images(mesh, vs_disc.object_to_camera_poses())
+        return self.images(mesh, vs_disc.object_to_camera_poses(),
+                           mat_props=mat_props, light_props=light_props)
 
     def wrapped_images(self, mesh, object_to_camera_poses,
-                       render_mode, stable_pose=None, debug=False):
+                       render_mode, stable_pose=None, mat_props=None,
+                       light_props=None,debug=False):
         """Create ObjectRender objects of the given mesh at the list of object to camera poses.
 
         Parameters
         ----------
         mesh : :obj:`Mesh3D`
             The mesh to be rendered.
-
         object_to_camera_poses : :obj:`list` of :obj:`RigidTransform`
             A list of object to camera transforms to render from.
-
         render_mode : int
             One of RenderMode.COLOR, RenderMode.DEPTH, or
             RenderMode.SCALED_DEPTH.
-
         stable_pose : :obj:`StablePose`
             A stable pose to render the object in.
-
+        mat_props : :obj:`MaterialProperties`
+            Material properties for the mesh
+        light_props : :obj:`MaterialProperties`
+            Lighting properties for the scene
         debug : bool
             Whether or not to debug the C++ meshrendering code.
 
@@ -554,19 +571,50 @@ class VirtualCamera(object):
                 object_to_camera_poses.append(T_stp_camera.dot(T_obj_stp))
 
         # render both image types (doesn't really cost any time)
-        binary_ims, depth_ims = self.images(mesh, object_to_camera_poses, debug=debug)
+        color_ims, depth_ims = self.images(mesh, object_to_camera_poses,
+                                           mat_props=mat_props,
+                                           light_props=light_props,
+                                           debug=debug)
 
         # convert to image wrapper classes
         images = []
         if render_mode == RenderMode.SEGMASK:
             # wrap binary images
-            for binary_im in binary_ims:
-                images.append(BinaryImage(binary_im[:,:,0], frame=self._camera_intr.frame))
+            for binary_im in color_ims:
+                images.append(BinaryImage(binary_im[:,:,0], frame=self._camera_intr.frame, threshold=0))
 
         elif render_mode == RenderMode.COLOR:
             # wrap color images
-            for color_im in binary_ims:
+            for color_im in color_ims:
                 images.append(ColorImage(color_im, frame=self._camera_intr.frame))
+
+        elif render_mode == RenderMode.COLOR_SCENE:
+            # wrap color and depth images
+            for color_im in color_ims:
+                images.append(ColorImage(color_im, frame=self._camera_intr.frame))
+            depth_images = []
+            for depth_im in depth_ims:
+                depth_images.append(DepthImage(depth_im, frame=self._camera_intr.frame))
+
+            # render images of scene objects
+            color_scene_ims = {}
+            depth_scene_ims = {}
+            for name, scene_obj in self._scene.iteritems():
+                scene_object_to_camera_poses = []
+                for world_to_camera_pose in world_to_camera_poses:
+                    scene_object_to_camera_poses.append(world_to_camera_pose * scene_obj.T_mesh_world)
+
+                color_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.COLOR, mat_props=scene_obj.mat_props, light_props=light_props, debug=debug)
+                depth_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.DEPTH, mat_props=scene_obj.mat_props, light_props=light_props, debug=debug)
+
+            # combine with scene images
+            for i in range(len(images)):
+                for j, name in enumerate(color_scene_ims.keys()):
+                    zero_px = images[i].zero_pixels()
+                    farther_px = depth_images[i].pixels_farther_than(depth_scene_ims[name][i].image)
+                    images[i].data[zero_px[:,0], zero_px[:,1], :] = color_scene_ims[name][i].image.data[zero_px[:,0], zero_px[:,1], :]
+                    images[i].data[farther_px[:,0], farther_px[:,1], :] = color_scene_ims[name][i].image.data[farther_px[:,0], farther_px[:,1], :]
+                    depth_images[i] = depth_images[i].combine_with(depth_scene_ims[name][i].image)
 
         elif render_mode == RenderMode.DEPTH:
             # render depth image
@@ -584,7 +632,7 @@ class VirtualCamera(object):
                 scene_object_to_camera_poses = []
                 for world_to_camera_pose in world_to_camera_poses:
                     scene_object_to_camera_poses.append(world_to_camera_pose * scene_obj.T_mesh_world)
-                depth_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.DEPTH)
+                depth_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.DEPTH, mat_props=scene_obj.mat_props, light_props=light_props)
 
             # combine with scene images
             for i in range(len(images)):
@@ -609,33 +657,34 @@ class VirtualCamera(object):
 
         return rendered_images
 
-    def wrapped_images_viewsphere(self, mesh, vs_disc, render_mode, stable_pose=None):
+    def wrapped_images_viewsphere(self, mesh, vs_disc, render_mode, stable_pose=None, mat_props=None, light_props=None):
         """Create ObjectRender objects of the given mesh around a viewsphere.
 
         Parameters
         ----------
         mesh : :obj:`Mesh3D`
             The mesh to be rendered.
-
         vs_disc : :obj:`ViewsphereDiscretizer`
             A discrete viewsphere from which we draw object to camera
             transforms.
-
         render_mode : int
             One of RenderMode.COLOR, RenderMode.DEPTH, or
             RenderMode.SCALED_DEPTH.
-
         stable_pose : :obj:`StablePose`
             A stable pose to render the object in.
+        mat_props : :obj:`MaterialProperties`
+            Material properties for the mesh
+        light_props : :obj:`MaterialProperties`
+            Lighting properties for the scene
 
         Returns
         -------
         :obj:`list` of :obj:`ObjectRender`
             A list of ObjectRender objects generated from the given parameters.
         """
-        return self.wrapped_images(mesh, vs_disc.object_to_camera_poses(), render_mode, stable_pose=stable_pose)
+        return self.wrapped_images(mesh, vs_disc.object_to_camera_poses(), render_mode, stable_pose=stable_pose, mat_props=mat_props, light_props=light_props)
 
-    def wrapped_images_planar_worksurface(self, mesh, ws_disc, render_mode, stable_pose=None):
+    def wrapped_images_planar_worksurface(self, mesh, ws_disc, render_mode, stable_pose=None, mat_props=None, light_props=None):
         """ Create ObjectRender objects of the given mesh around a viewsphere and 
         a planar worksurface, where translated objects project into the center of
         the  camera.
@@ -644,17 +693,18 @@ class VirtualCamera(object):
         ----------
         mesh : :obj:`Mesh3D`
             The mesh to be rendered.
-
         ws_disc : :obj:`PlanarWorksurfaceDiscretizer`
             A discrete viewsphere and translations in plane from which we draw
             object to camera transforms.
-
         render_mode : int
             One of RenderMode.COLOR, RenderMode.DEPTH, or
             RenderMode.SCALED_DEPTH.
-
         stable_pose : :obj:`StablePose`
             A stable pose to render the object in.
+        mat_props : :obj:`MaterialProperties`
+            Material properties for the mesh
+        light_props : :obj:`MaterialProperties`
+            Lighting properties for the scene
 
         Returns
         -------
@@ -674,7 +724,7 @@ class VirtualCamera(object):
         images = []
         for T_obj_camera, shifted_camera_intr in zip(object_to_camera_poses, shifted_camera_intrinsics):
             self._camera_intr = shifted_camera_intr
-            images.extend(self.wrapped_images(mesh, [T_obj_camera], render_mode, stable_pose=stable_pose))
+            images.extend(self.wrapped_images(mesh, [T_obj_camera], render_mode, stable_pose=stable_pose, mat_props=mat_props, light_props=light_props))
 
         self._camera_intr = old_camera_intr
         return images, object_to_camera_poses, shifted_camera_intrinsics

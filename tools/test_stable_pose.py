@@ -21,9 +21,6 @@ if __name__ == '__main__':
     # read mesh
     mesh = ObjFile(mesh_name).read()
 
-    IPython.embed()
-    exit(0)
-
     mesh.vertices_ = np.load('../dex-net/data/meshes/lego_vertices.npy')
     mesh.center_of_mass = np.load('../dex-net/data/meshes/lego_com.npy')
 

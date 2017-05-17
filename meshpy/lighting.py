@@ -51,26 +51,30 @@ class LightingProperties(object):
     def __init__(self, ambient_intensity=np.array([0,0,0,1]),
                  diffuse_intensity=np.array([1,1,1,1]),
                  specular_intensity=np.array([1,1,1,1]),
-                 T_light_world=RigidTransform(rotation=np.array([[0, 1, 0],
-                                                                 [1, 0, 0],
-                                                                 [0, 0, -1]]),
-                                              translation=[0,0,-0.1],
-                                              from_frame='light',
-                                              to_frame='world'),
+                 T_light_camera=RigidTransform(rotation=np.eye(3),
+                                               translation=np.zeros(3),
+                                               from_frame='light',
+                                               to_frame='camera'),
                  spot_cutoff=180.0):
         self.ambient_intensity = ambient_intensity
         self.diffuse_intensity = diffuse_intensity
         self.specular_intensity = specular_intensity
-        self.T_light_world = T_light_world
+        self.T_light_camera = T_light_camera
         self.spot_cutoff = spot_cutoff
+        self.T_light_obj = None
+
+    def set_pose(self, T_obj_camera):
+        self.T_light_obj = T_obj_camera.inverse() * self.T_light_camera.as_frames('light', T_obj_camera.to_frame)
 
     @property
     def arr(self):
         """ Returns the lighting properties as a contiguous numpy array. """
+        if self.T_light_obj is None:
+            raise ValueError('Need to set pose relative to object!')
         return np.r_[self.ambient_intensity,
                      self.diffuse_intensity,
                      self.specular_intensity,
-                     self.T_light_world.translation,
-                     self.T_light_world.z_axis,                     
+                     self.T_light_obj.translation,
+                     self.T_light_obj.z_axis,                     
                      self.spot_cutoff].astype(np.float64)
 

@@ -582,6 +582,7 @@ class Mesh3D(object):
         if ip[0] > 0:
             normals = [[-n[0], -n[1], -n[2]] for n in normals]
         self.normals = np.array(normals)
+        #self.normals = -self.normals
 
     def scale_principal_eigenvalues(self, new_evals):
         self.normalize_vertices()

@@ -152,7 +152,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   GLfloat light_ambient[4];
   GLfloat light_diffuse[4];
   GLfloat light_specular[4];
-  GLfloat light_position[3];
+  GLfloat light_position[4];
   GLfloat light_direction[3];
   GLfloat light_spot_cutoff[1];
 
@@ -174,6 +174,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   light_position[0] = (GLfloat)light_props_buffer[light_position_off + 0];
   light_position[1] = (GLfloat)light_props_buffer[light_position_off + 1];
   light_position[2] = (GLfloat)light_props_buffer[light_position_off + 2];
+  light_position[3] = 1.0; // always set w to 1
 
   light_direction[0] = (GLfloat)light_props_buffer[light_direction_off + 0];
   light_direction[1] = (GLfloat)light_props_buffer[light_direction_off + 1];
@@ -188,7 +189,13 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
   glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, light_spot_cutoff);
 
+  if (debug) {
+    std::cout << "Light pos " << light_position[0] << " " << light_position[1] << " " << light_position[2] << " " << light_position[3] << std::endl;
+    std::cout << "Light dir " << light_direction[0] << " " << light_direction[1] << " " << light_direction[2] << std::endl;
+  }
+
   // enable lighting
+  //glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
 
