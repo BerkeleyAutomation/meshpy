@@ -560,15 +560,20 @@ class Mesh3D(object):
         normals = []
         for i in range(len(self.vertices)):
             inds = np.where(self.triangles == i)
-            first_tri = self.triangles[inds[0][0],:]
-            t = self.vertices[first_tri, :]
-            v0 = t[1,:] - t[0,:]
-            v1 = t[2,:] - t[0,:]
-            v0 = v0 / np.linalg.norm(v0)
-            v1 = v1 / np.linalg.norm(v1)
-            n = np.cross(v0, v1)
-            n = n / np.linalg.norm(n)
-            normals.append(n.tolist())
+            tris = self.triangles[inds[0],:]
+            normal = np.zeros(3)
+            for tri in tris:
+                t = self.vertices[tri, :]
+                v0 = t[1,:] - t[0,:]
+                v1 = t[2,:] - t[0,:]
+                v0 = v0 / np.linalg.norm(v0)
+                v1 = v1 / np.linalg.norm(v1)
+                n = np.cross(v0, v1)
+                n = n / np.linalg.norm(n)
+                w = self._area_of_tri(tri)
+                normal += w * n
+            normal = normal / np.linalg.norm(normal)
+            normals.append(normal)
 
         # Reverse normals based on alignment with convex hull
         hull = ss.ConvexHull(self.vertices_)
@@ -582,8 +587,7 @@ class Mesh3D(object):
         if ip[0] > 0:
             normals = [[-n[0], -n[1], -n[2]] for n in normals]
         self.normals = np.array(normals)
-        #self.normals = -self.normals
-
+        
     def scale_principal_eigenvalues(self, new_evals):
         self.normalize_vertices()
 
@@ -615,32 +619,32 @@ class Mesh3D(object):
         """
         return Mesh3D(np.copy(self.vertices_), np.copy(self.triangles_))
 
-    def subdivide(self, min_tri_length = None):
+    def subdivide(self, min_tri_length = np.inf):
         """Return a copy of the mesh that has been subdivided by one iteration.
 
         Note
         ----
         This method only copies the vertices and triangles of the mesh.
         """
-        new_mesh = self.copy()
-        new_vertices = new_mesh.vertices.tolist()
-        old_triangles = new_mesh.triangles.tolist()
+        new_vertices = self.vertices.tolist()
+        old_triangles = self.triangles.tolist()
 
         new_triangles = []
-        triangle_index_mapping = {}
         tri_queue = Queue.Queue()
 
         for j, triangle in enumerate(old_triangles):
             tri_queue.put((j, triangle))
-            triangle_index_mapping[j] = []
 
+        num_subdivisions_per_tri = np.zeros(len(old_triangles))
         while not tri_queue.empty():
             tri_index_pair = tri_queue.get()
             j = tri_index_pair[0]
             triangle = tri_index_pair[1]
 
-            if (min_tri_length is None or
-                Mesh3D._max_edge_length(triangle, new_vertices) > min_tri_length):
+            if (np.isinf(min_tri_length) and num_subdivisions_per_tri[j] == 0) or \
+               (Mesh3D._max_edge_length(triangle, new_vertices) > min_tri_length):
+
+                # subdivide
                 t_vertices = np.array([new_vertices[i] for i in triangle])
                 edge01 = 0.5 * (t_vertices[0,:] + t_vertices[1,:])
                 edge12 = 0.5 * (t_vertices[1,:] + t_vertices[2,:])
@@ -653,6 +657,8 @@ class Mesh3D(object):
                 new_vertices.append(edge12)
                 new_vertices.append(edge02)
 
+                num_subdivisions_per_tri[j] += 1
+
                 for triplet in [[triangle[0], i_01, i_02],
                                 [triangle[1], i_12, i_01],
                                 [triangle[2], i_02, i_12],
@@ -660,12 +666,11 @@ class Mesh3D(object):
                     tri_queue.put((j, triplet))
 
             else:
+                # add to final list
                 new_triangles.append(triangle)
-                triangle_index_mapping[j].append(len(new_triangles)-1)
-
-        new_mesh.vertices = new_vertices
-        new_mesh.triangles = new_triangles
-        return new_mesh
+                
+        return Mesh3D(np.array(new_vertices), np.array(new_triangles),
+                      center_of_mass=self.center_of_mass)
 
     def transform(self, T):
         """Return a copy of the mesh that has been transformed by T.
@@ -1012,6 +1017,14 @@ class Mesh3D(object):
             combined_normals[:self.num_vertices, :] = self.normals
             combined_normals[self.num_vertices:, :] = other_mesh.normals
         return Mesh3D(combined_vertices, combined_triangles.astype(np.int32), combined_normals)
+
+    def flip_tri_orientation(self):
+        """ Flips the orientation of all triangles. """
+        new_tris = self.triangles
+        new_tris[:,1] = self.triangles[:,2]
+        new_tris[:,2] = self.triangles[:,1]
+        return Mesh3D(self.vertices, new_tris, self.normals,
+                      center_of_mass=self.center_of_mass)
 
     def visualize(self, color=(0.5, 0.5, 0.5), style='surface', opacity=1.0):
         """Plots visualization of mesh using MayaVI.

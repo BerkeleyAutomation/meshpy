@@ -592,29 +592,22 @@ class VirtualCamera(object):
             # wrap color and depth images
             for color_im in color_ims:
                 images.append(ColorImage(color_im, frame=self._camera_intr.frame))
-            depth_images = []
-            for depth_im in depth_ims:
-                depth_images.append(DepthImage(depth_im, frame=self._camera_intr.frame))
 
             # render images of scene objects
             color_scene_ims = {}
-            depth_scene_ims = {}
             for name, scene_obj in self._scene.iteritems():
                 scene_object_to_camera_poses = []
                 for world_to_camera_pose in world_to_camera_poses:
                     scene_object_to_camera_poses.append(world_to_camera_pose * scene_obj.T_mesh_world)
 
                 color_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.COLOR, mat_props=scene_obj.mat_props, light_props=light_props, debug=debug)
-                depth_scene_ims[name] = self.wrapped_images(scene_obj.mesh, scene_object_to_camera_poses, RenderMode.DEPTH, mat_props=scene_obj.mat_props, light_props=light_props, debug=debug)
 
             # combine with scene images
+            # TODO: re-add farther
             for i in range(len(images)):
                 for j, name in enumerate(color_scene_ims.keys()):
                     zero_px = images[i].zero_pixels()
-                    farther_px = depth_images[i].pixels_farther_than(depth_scene_ims[name][i].image)
                     images[i].data[zero_px[:,0], zero_px[:,1], :] = color_scene_ims[name][i].image.data[zero_px[:,0], zero_px[:,1], :]
-                    images[i].data[farther_px[:,0], farther_px[:,1], :] = color_scene_ims[name][i].image.data[farther_px[:,0], farther_px[:,1], :]
-                    depth_images[i] = depth_images[i].combine_with(depth_scene_ims[name][i].image)
 
         elif render_mode == RenderMode.DEPTH:
             # render depth image

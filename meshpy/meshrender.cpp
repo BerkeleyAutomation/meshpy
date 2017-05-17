@@ -142,10 +142,10 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
 
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glShadeModel(GL_SMOOTH);
-  glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-  glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-  glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+  glMaterialfv(GL_FRONT_BACK, GL_AMBIENT, mat_ambient);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+  glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
 
   // setup lighting properties
   //GLfloat light_position[] = { 0.0, 0.0, -10.0, 0.0 };
@@ -189,18 +189,31 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
   glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, light_spot_cutoff);
 
+  // GLfloat light1_position[4];
+  // light1_position[0] = light_position[0]
+  // light1_position[1] = light_position[1] + 0.1
+  // light1_position[2] = light_position[2]
+  // light1_position[3] = light_position[3]
+  // glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
+  // glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
+  // glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
+  // glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
+  // glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction);
+  // glLightfv(GL_LIGHT1, GL_SPOT_CUTOFF, light_spot_cutoff);
+
   if (debug) {
     std::cout << "Light pos " << light_position[0] << " " << light_position[1] << " " << light_position[2] << " " << light_position[3] << std::endl;
     std::cout << "Light dir " << light_direction[0] << " " << light_direction[1] << " " << light_direction[2] << std::endl;
   }
 
   // enable lighting
-  //glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+  glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
+  //glEnable(GL_LIGHT1);
 
   // set color
-  glColorMaterial(GL_FRONT, GL_DIFFUSE);
+  glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
   glEnable(GL_COLOR_MATERIAL);
 
   // setup rendering

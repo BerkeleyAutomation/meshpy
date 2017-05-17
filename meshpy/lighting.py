@@ -23,15 +23,15 @@ class MaterialProperties(object):
         3-array of integers between 0 and 255
     """
     def __init__(self, color=Color.WHITE,
-                 ambient_reflectance=np.array([0.2,0.2,0.2,1]),
-                 diffuse_reflectance=np.array([0.8,0.8,0.8,1]),
-                 specular_reflectance=np.array([0,0,0,1]),
+                 ambient=0.2,
+                 diffuse=0.8,
+                 specular=0,
                  shininess=0):
         # set params
-        self.color = color
-        self.ambient_reflectance = ambient_reflectance
-        self.diffuse_reflectance = diffuse_reflectance
-        self.specular_reflectance = specular_reflectance
+        self.color = np.array(color)
+        self.ambient = ambient
+        self.diffuse = diffuse
+        self.specular = specular
         self.shininess = shininess
                  
 
@@ -39,28 +39,28 @@ class MaterialProperties(object):
     def arr(self):
         """ Returns the material properties as a contiguous numpy array. """
         return np.r_[self.color,
-                     self.ambient_reflectance,
-                     self.diffuse_reflectance,
-                     self.specular_reflectance,
+                     self.ambient * np.ones(3), 1,
+                     self.diffuse * np.ones(3), 1,
+                     self.specular * np.ones(3), 1,
                      self.shininess].astype(np.float64)
 
 class LightingProperties(object):
     """ Struct to encapsulate lighting properties for
     OpenGL rendering.
     """
-    def __init__(self, ambient_intensity=np.array([0,0,0,1]),
-                 diffuse_intensity=np.array([1,1,1,1]),
-                 specular_intensity=np.array([1,1,1,1]),
+    def __init__(self, ambient=0,
+                 diffuse=1,
+                 specular=1,
                  T_light_camera=RigidTransform(rotation=np.eye(3),
                                                translation=np.zeros(3),
                                                from_frame='light',
                                                to_frame='camera'),
-                 spot_cutoff=180.0):
-        self.ambient_intensity = ambient_intensity
-        self.diffuse_intensity = diffuse_intensity
-        self.specular_intensity = specular_intensity
+                 cutoff=180.0):
+        self.ambient = ambient
+        self.diffuse = diffuse
+        self.specular = specular
         self.T_light_camera = T_light_camera
-        self.spot_cutoff = spot_cutoff
+        self.cutoff = cutoff
         self.T_light_obj = None
 
     def set_pose(self, T_obj_camera):
@@ -71,10 +71,10 @@ class LightingProperties(object):
         """ Returns the lighting properties as a contiguous numpy array. """
         if self.T_light_obj is None:
             raise ValueError('Need to set pose relative to object!')
-        return np.r_[self.ambient_intensity,
-                     self.diffuse_intensity,
-                     self.specular_intensity,
+        return np.r_[self.ambient * np.ones(3), 1,
+                     self.diffuse * np.ones(3), 1,
+                     self.specular * np.ones(3), 1,
                      self.T_light_obj.translation,
                      self.T_light_obj.z_axis,                     
-                     self.spot_cutoff].astype(np.float64)
+                     self.cutoff].astype(np.float64)
 
