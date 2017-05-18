@@ -11,6 +11,8 @@ from sdf import Sdf, Sdf3D
 from sdf_file import SdfFile
 from stable_pose import StablePose
 from stp_file import StablePoseFile
+from urdf_writer import UrdfWriter
+from lighting import MaterialProperties, LightingProperties
 
 try:
     from mesh_renderer import ViewsphereDiscretizer, PlanarWorksurfaceDiscretizer, VirtualCamera, SceneObject
@@ -32,4 +34,6 @@ __all__ = ['Mesh3D',
            'UniformViewsphereRandomVariable',
            'UniformPlanarWorksurfaceRandomVariable',
            'UniformPlanarWorksurfaceImageRandomVariable'
+           'UrdfWriter',
+           'MaterialProperties'
        ]

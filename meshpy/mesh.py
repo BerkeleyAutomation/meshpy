@@ -5,6 +5,7 @@ Authors: Jeff Mahler and Matt Matl
 import math
 import Queue
 import os
+import random
 import sys
 
 import numpy as np
@@ -102,6 +103,7 @@ class Mesh3D(object):
         self.bb_center_ = self._compute_bb_center() 
         self.centroid_ = self._compute_centroid()
         self.surface_area_ = None
+        self.face_dag_ = None
 
         if self.center_of_mass_ is None:
             if uniform_com:
@@ -556,31 +558,86 @@ class Mesh3D(object):
     def compute_vertex_normals(self):
         """ Get normals from triangles"""
         normals = []
+        # weighted average of triangle normal for each vertex
         for i in range(len(self.vertices)):
             inds = np.where(self.triangles == i)
-            first_tri = self.triangles[inds[0][0],:]
-            t = self.vertices[first_tri, :]
-            v0 = t[1,:] - t[0,:]
-            v1 = t[2,:] - t[0,:]
-            v0 = v0 / np.linalg.norm(v0)
-            v1 = v1 / np.linalg.norm(v1)
-            n = np.cross(v0, v1)
-            n = n / np.linalg.norm(n)
-            normals.append(n.tolist())
+            tris = self.triangles[inds[0],:]
+            normal = np.zeros(3)
+            for tri in tris:
+                # compute triangle normal
+                t = self.vertices[tri, :]
+                v0 = t[1,:] - t[0,:]
+                v1 = t[2,:] - t[0,:]
+                if np.linalg.norm(v0) == 0:
+                    continue
+                v0 = v0 / np.linalg.norm(v0)
+                if np.linalg.norm(v1) == 0:
+                    continue
+                v1 = v1 / np.linalg.norm(v1)
+                n = np.cross(v0, v1)
+                if np.linalg.norm(n) == 0:
+                    continue
+                n = n / np.linalg.norm(n)
 
-        # Reverse normals based on alignment with convex hull
-        hull = ss.ConvexHull(self.vertices_)
-        hull_tris = hull.simplices.tolist()
-        hull_vertex_ind = hull_tris[0][0]
-        hull_vertex = self.vertices[hull_vertex_ind]
-        hull_vertex_normal = normals[hull_vertex_ind]
-        v = np.array(hull_vertex).reshape([1,3])
-        n = np.array(hull_vertex_normal)
-        ip = (self.vertices - np.tile(hull_vertex, [self.vertices.shape[0], 1])).dot(n)
-        if ip[0] > 0:
-            normals = [[-n[0], -n[1], -n[2]] for n in normals]
+                # compute weight by area of triangle
+                w_area = self._area_of_tri(tri)
+
+                # compute weight by edge angle
+                vertex_ind = np.where(tri == i)[0][0]
+                if vertex_ind == 0:
+                    e0 = t[1,:] - t[0,:]
+                    e1 = t[2,:] - t[0,:]
+                elif vertex_ind == 1:
+                    e0 = t[0,:] - t[1,:]
+                    e1 = t[2,:] - t[1,:]
+                elif vertex_ind == 2:
+                    e0 = t[0,:] - t[2,:]
+                    e1 = t[1,:] - t[2,:]
+                if np.linalg.norm(e0) == 0:
+                    continue
+                if np.linalg.norm(e1) == 0:
+                    continue
+                e0 = e0 / np.linalg.norm(e0)
+                e1 = e1 / np.linalg.norm(e1)
+                w_angle = np.arccos(e0.dot(e1))
+
+                # weighted update
+                # www.bytehazard.com/articles/vertnorm.html
+                normal += w_area * w_angle * n
+
+            # normalize
+            if np.linalg.norm(normal) == 0:
+                normal = np.array([1,0,0])
+            normal = normal / np.linalg.norm(normal)
+            normals.append(normal)
+
+        # set numpy array
         self.normals = np.array(normals)
 
+        # reverse normals based on alignment with convex hull
+        hull = ss.ConvexHull(self.vertices)
+        hull_tris = hull.simplices.tolist()
+        hull_vertex_inds = np.unique(hull_tris)
+
+        num_aligned = 0
+        num_misaligned = 0
+        for hull_vertex_ind in hull_vertex_inds:
+            hull_vertex = self.vertices[hull_vertex_ind, :]
+            hull_vertex_normal = normals[hull_vertex_ind]
+            ip = (hull_vertex - self.vertices).dot(hull_vertex_normal)
+            num_aligned += np.sum(ip > 0)
+            num_misaligned += np.sum(ip <= 0)
+
+        if num_misaligned > num_aligned:
+            self.normals = -self.normals
+
+    def flip_normals(self):
+        """ Flips the mesh normals. """
+        if self.normals is not None:
+            self.normals = -self.normals
+            return True
+        return False
+        
     def scale_principal_eigenvalues(self, new_evals):
         self.normalize_vertices()
 
@@ -612,32 +669,32 @@ class Mesh3D(object):
         """
         return Mesh3D(np.copy(self.vertices_), np.copy(self.triangles_))
 
-    def subdivide(self, min_tri_length = None):
+    def subdivide(self, min_tri_length = np.inf):
         """Return a copy of the mesh that has been subdivided by one iteration.
 
         Note
         ----
         This method only copies the vertices and triangles of the mesh.
         """
-        new_mesh = self.copy()
-        new_vertices = new_mesh.vertices.tolist()
-        old_triangles = new_mesh.triangles.tolist()
+        new_vertices = self.vertices.tolist()
+        old_triangles = self.triangles.tolist()
 
         new_triangles = []
-        triangle_index_mapping = {}
         tri_queue = Queue.Queue()
 
         for j, triangle in enumerate(old_triangles):
             tri_queue.put((j, triangle))
-            triangle_index_mapping[j] = []
 
+        num_subdivisions_per_tri = np.zeros(len(old_triangles))
         while not tri_queue.empty():
             tri_index_pair = tri_queue.get()
             j = tri_index_pair[0]
             triangle = tri_index_pair[1]
 
-            if (min_tri_length is None or
-                Mesh3D._max_edge_length(triangle, new_vertices) > min_tri_length):
+            if (np.isinf(min_tri_length) and num_subdivisions_per_tri[j] == 0) or \
+               (Mesh3D._max_edge_length(triangle, new_vertices) > min_tri_length):
+
+                # subdivide
                 t_vertices = np.array([new_vertices[i] for i in triangle])
                 edge01 = 0.5 * (t_vertices[0,:] + t_vertices[1,:])
                 edge12 = 0.5 * (t_vertices[1,:] + t_vertices[2,:])
@@ -650,6 +707,8 @@ class Mesh3D(object):
                 new_vertices.append(edge12)
                 new_vertices.append(edge02)
 
+                num_subdivisions_per_tri[j] += 1
+
                 for triplet in [[triangle[0], i_01, i_02],
                                 [triangle[1], i_12, i_01],
                                 [triangle[2], i_02, i_12],
@@ -657,12 +716,11 @@ class Mesh3D(object):
                     tri_queue.put((j, triplet))
 
             else:
+                # add to final list
                 new_triangles.append(triangle)
-                triangle_index_mapping[j].append(len(new_triangles)-1)
-
-        new_mesh.vertices = new_vertices
-        new_mesh.triangles = new_triangles
-        return new_mesh
+                
+        return Mesh3D(np.array(new_vertices), np.array(new_triangles),
+                      center_of_mass=self.center_of_mass)
 
     def transform(self, T):
         """Return a copy of the mesh that has been transformed by T.
@@ -723,13 +781,13 @@ class Mesh3D(object):
                     tri_point_pairs.append((i, contact_point))
         return tri_point_pairs
 
-    def get_T_surface_obj(self, T_surface_ori_obj, delta=0.0):
+    def get_T_surface_obj(self, T_obj_surface, delta=0.0):
         """ Gets the transformation that puts the object resting exactly on
         the z=delta plane
 
         Parameters
         ----------
-        T_surface_ori_obj : :obj:`RigidTransform`
+        T_obj_surface : :obj:`RigidTransform`
             The RigidTransform by which the mesh is transformed.
         delta : float
             Z-coordinate to rest the mesh on
@@ -738,16 +796,18 @@ class Mesh3D(object):
         ----
         This method copies the vertices and triangles of the mesh.
         """
-        obj_tf = self.transform(T_surface_ori_obj)
+        T_obj_surface_ori = T_obj_surface.copy()
+        T_obj_surface_ori.translation = np.zeros(3)
+        obj_tf = self.transform(T_obj_surface_ori)
         mn, mx = obj_tf.bounding_box()
 
         z=mn[2]
         x0 = np.array([0,0,-z+delta])
 
-        T_surface_obj = RigidTransform(rotation=T_surface_ori_obj.rotation,
+        T_obj_surface = RigidTransform(rotation=T_obj_surface_ori.rotation,
                                        translation=x0, from_frame='obj',
                                        to_frame='surface')
-        return T_surface_obj
+        return T_obj_surface
 
     def rescale_dimension(self, scale, scaling_type=ScalingTypeMin):
         """Rescales the vertex coordinates to scale using the given scaling_type.
@@ -807,7 +867,7 @@ class Mesh3D(object):
         hull = ss.ConvexHull(self.vertices_)
         hull_tris = hull.simplices
         # TODO do normals properly...
-        cvh_mesh = Mesh3D(np.copy(self.vertices_), np.copy(hull_tris))#, self.normals_)
+        cvh_mesh = Mesh3D(np.copy(self.vertices_), np.copy(hull_tris), center_of_mass=self.center_of_mass_)
         cvh_mesh.remove_unreferenced_vertices()
         return cvh_mesh
 
@@ -824,66 +884,158 @@ class Mesh3D(object):
         :obj:`list` of :obj:`StablePose`
             A list of StablePose objects for the mesh.
         """
+        # compute face dag if necessary
+        if self.face_dag_ is None:
+            self._compute_face_dag()
+        cvh_mesh = self.face_dag_.mesh
+        cvh_verts = self.face_dag_.mesh.vertices
+
+        # propagate probabilities
         cm = self.center_of_mass
-        cvh_mesh = self.convex_hull()
+        prob_map = Mesh3D._compute_prob_map(self.face_dag_.nodes.values(), cvh_verts, cm)
 
-        cvh_tris = cvh_mesh.triangles
-        cvh_verts  = cvh_mesh.vertices
-
-        edge_to_faces = {} # Mapping from Edge objects to adjacent triangle lists
-        tri_to_vert = {}   # Mapping from Triangle tuples to Vertex objects
-
-        # Create a map from edges to bordering faces and from
-        # faces to Vertex objects.
-        for tri in cvh_tris:
-            tri_verts = [cvh_verts[i] for i in tri]
-            s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
-            s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
-            s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
-            for seg in [s1, s2, s3]:
-                k = seg.tup
-                if k in edge_to_faces:
-                    edge_to_faces[k] += [tri]
-                else:
-                    edge_to_faces[k] = [tri]
-
-            p = self._compute_proj_area(tri_verts) / (4 * math.pi)
-            tri_to_vert[tuple(tri)] = Mesh3D._GraphVertex(p, tri)
-
-        # determining if landing on a given face implies toppling, and initializes a directed acyclic graph
-        # a directed edge between two graph nodes implies that landing on one face will lead to toppling onto its successor
-        # an outdegree of 0 for any graph node implies it is a sink (the object will come to rest if it topples to this face)
-        for tri in cvh_tris:
-            tri_verts = [cvh_verts[i] for i in tri]
-
-            proj_cm = Mesh3D._proj_point_to_plane(tri_verts, cm)
-
-            # update list of top vertices, add edges between vertices as needed
-            if not Mesh3D._point_in_tri(tri_verts, proj_cm):
-                s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
-                s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
-                s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
-
-                # TODO: Only using one edge at the moment, should maybe do two
-                closest_edges = Mesh3D._closest_segment(proj_cm, [s1, s2, s3])
-                closest_edge = closest_edges[0]
-
-                for face in edge_to_faces[closest_edge.tup]:
-                    if list(face) != list(tri):
-                        topple_face = face
-                predecessor = tri_to_vert[tuple(tri)]
-                successor = tri_to_vert[tuple(topple_face)]
-                predecessor.add_edge(successor)
-
-        prob_map = Mesh3D._compute_prob_map(tri_to_vert.values())
-
+        # compute stable poses
         stable_poses = []
         for face, p in prob_map.items():
             x0 = cvh_verts[face[0]]
             r = cvh_mesh._compute_basis([cvh_verts[i] for i in face])
             if p > min_prob:
-                stable_poses.append(sp.StablePose(p, r, x0))
+                stable_poses.append(sp.StablePose(p, r, x0, face=face))
+
         return stable_poses
+
+    def resting_pose(self, T_obj_world, eps=1e-10):
+        """ Returns the stable pose that the mesh will rest on if it lands
+        on an infinite planar worksurface quasi-statically in the given
+        transformation (only the rotation is used).
+
+        Parameters
+        ----------
+        T_obj_world : :obj:`core.RigidTransform`
+            transformation from object to table basis (z-axis upward) specifying the orientation of the mesh
+        eps : float
+            numeric tolerance in cone projection solver
+        
+        Returns
+        -------
+        :obj:`StablePose`
+            stable pose specifying the face that the mesh will land on
+        """
+        # compute face dag if necessary
+        if self.face_dag_ is None:
+            self._compute_face_dag()
+
+        # adjust transform to place mesh in contact with table
+        T_obj_table = self.get_T_surface_obj(T_obj_world, delta=0.0)
+
+        # transform mesh
+        cvh_mesh = self.face_dag_.mesh 
+        cvh_verts = cvh_mesh.vertices
+        mesh_tf = cvh_mesh.transform(T_obj_table)
+        vertices_tf = mesh_tf.vertices
+
+        # find the vertex with the minimum z value
+        min_z = np.min(vertices_tf[:,2])
+        contact_ind = np.where(vertices_tf[:,2] == min_z)[0]
+        if contact_ind.shape[0] == 0:
+            raise ValueError('Unable to find the vertex contacting the table!')
+        vertex_ind = contact_ind[0]
+
+        # project the center of mass onto the table plane
+        table_tri = np.array([[0,0,0],
+                              [1,0,0],
+                              [0,1,0]])
+        proj_cm = Mesh3D._proj_point_to_plane(table_tri, self.center_of_mass)
+        contact_vertex = vertices_tf[vertex_ind]
+        v_cm = proj_cm - contact_vertex
+        v_cm = v_cm[:2]
+
+        # compute which face the vertex will topple onto
+        # break loop when topple tri is found        
+        topple_tri = None
+        neighboring_tris = self.face_dag_.vertex_to_tri[vertex_ind]
+        random.shuffle(neighboring_tris)
+        for neighboring_tri in neighboring_tris:
+            # find indices of other two vertices
+            ind = [0, 1, 2]
+            for i, v in enumerate(neighboring_tri):
+                if np.allclose(contact_vertex, vertices_tf[v]):
+                    ind.remove(i)
+                    
+            # form edges in table plane
+            i1 = neighboring_tri[ind[0]]
+            i2 = neighboring_tri[ind[1]]
+            v1 = Mesh3D._proj_point_to_plane(table_tri, vertices_tf[i1])
+            v2 = Mesh3D._proj_point_to_plane(table_tri, vertices_tf[i2])
+            u1 = v1 - contact_vertex
+            u2 = v2 - contact_vertex
+            U = np.array([u1[:2], u2[:2]]).T
+
+            # solve linear subproblem to find cone coefficients
+            try:
+                alpha = np.linalg.solve(U + eps*np.eye(2), v_cm)
+
+                # exit loop with topple tri if found
+                if np.all(alpha >= 0):
+                    tri_normal = cvh_mesh._compute_basis([cvh_verts[i] for i in neighboring_tri])[2,:]
+                    if tri_normal[2] < 0:
+                        tri_normal = -tri_normal
+
+                    # check whether lower
+                    lower = True
+                    tri_center = np.mean([vertices_tf[i] for i in neighboring_tri], axis=0)
+                    if topple_tri is not None:
+                        topple_tri_center = np.mean([vertices_tf[i] for i in topple_tri], axis=0)
+                        lower = (tri_normal.dot(topple_tri_center-tri_center) > 0)
+                    if lower:
+                        topple_tri = neighboring_tri
+
+            except np.linalg.LinAlgError:
+                logging.warning('Failed to solve linear system')
+
+        # check solution
+        if topple_tri is None:
+            raise ValueError('Failed to find a valid topple triangle')
+
+        # compute the face that the mesh will eventually rest on
+        # by following the child nodes to a sink
+        cur_node = self.face_dag_.nodes[tuple(topple_tri)]
+        visited = []
+        while not cur_node.is_sink:
+            if cur_node in visited:
+                raise ValueError('Found loop!')
+            visited.append(cur_node)
+            cur_node = cur_node.children[0]
+
+        # create stable pose
+        resting_face = cur_node.face
+        x0 = cvh_verts[vertex_ind]
+        R = cvh_mesh._compute_basis([cvh_verts[i] for i in resting_face])
+
+        # align with axes with the original pose
+        best_theta = 0
+        best_dot = 0
+        cur_theta = 0
+        delta_theta = 0.01
+        px = R[:,0].copy()
+        px[2] = 0
+        py = R[:,1].copy()
+        py[2] = 0
+        align_x = True
+        if np.linalg.norm(py) > np.linalg.norm(px):
+            align_x = False
+        while cur_theta <= 2*np.pi:
+            Rz = RigidTransform.z_axis_rotation(cur_theta)
+            Rp = Rz.dot(R)
+            dot_prod = Rp[:,0].dot(T_obj_world.x_axis)
+            if not align_x:
+                dot_prod = Rp[:,1].dot(T_obj_world.y_axis)
+            if dot_prod > best_dot:
+                best_dot = dot_prod
+                best_theta = cur_theta
+            cur_theta += delta_theta
+        R = RigidTransform.z_axis_rotation(best_theta).dot(R)
+        return sp.StablePose(0.0, R, x0, face=resting_face)
 
     def merge(self, other_mesh):
         """ Combines this mesh with another mesh.
@@ -914,7 +1066,15 @@ class Mesh3D(object):
             combined_normals = np.zeros([total_vertices, 3])
             combined_normals[:self.num_vertices, :] = self.normals
             combined_normals[self.num_vertices:, :] = other_mesh.normals
-        return Mesh3D(combined_vertices, combined_triangles, combined_normals)
+        return Mesh3D(combined_vertices, combined_triangles.astype(np.int32), combined_normals)
+
+    def flip_tri_orientation(self):
+        """ Flips the orientation of all triangles. """
+        new_tris = self.triangles
+        new_tris[:,1] = self.triangles[:,2]
+        new_tris[:,2] = self.triangles[:,1]
+        return Mesh3D(self.vertices, new_tris, self.normals,
+                      center_of_mass=self.center_of_mass)
 
     def visualize(self, color=(0.5, 0.5, 0.5), style='surface', opacity=1.0):
         """Plots visualization of mesh using MayaVI.
@@ -1004,7 +1164,7 @@ class Mesh3D(object):
         float
             The mass of the mesh.
         """
-        return self.density_ * self.get_total_volume()
+        return self.density_ * self.total_volume()
 
     def _compute_inertia(self):
         """Computes the mesh inertia matrix.
@@ -1240,7 +1400,8 @@ class Mesh3D(object):
 
         # Ensure that all vertices are on the positive halfspace (aka above the table)
         dot_product = (self.vertices - centroid).dot(z_o)
-        if dot_product[0] < 0:
+        dot_product[np.abs(dot_product) < 1e-10] = 0.0
+        if np.any(dot_product < 0):
             z_o = -z_o
 
         x_o = np.array([-z_o[1], z_o[0], 0])
@@ -1263,6 +1424,86 @@ class Mesh3D(object):
         x_o = R.T.dot(np.array([comp_array[0,0], comp_array[0,1], 0]))
         y_o = np.cross(z_o, x_o)
         return np.array([np.transpose(x_o), np.transpose(y_o), np.transpose(z_o)])
+
+    def _compute_face_dag(self):
+        """ Computes a directed acyclic graph (DAG) specifying the
+        toppling structure of the mesh faces by:
+            1) Computing the mesh convex hull
+            2) Creating maps from vertices and edges to the triangles that share them 
+            3) Connecting each triangle in the convex hull to the face it will topple to, if landed on
+        Modifies the class variable self.face_dag_.
+        """
+        # compute convex hull
+        cm = self.center_of_mass
+        cvh_mesh = self.convex_hull()
+        cvh_tris = cvh_mesh.triangles
+        cvh_verts  = cvh_mesh.vertices
+
+        # create vertex and edge maps, and create nodes of graph
+        nodes = {}   # mapping from triangle tuples to GraphVertex objects
+        vertex_to_tri = {} # mapping from vertex indidces to adjacent triangle lists
+        edge_to_tri = {} # mapping from edge tuples to adjacent triangle lists
+
+        for tri in cvh_tris:
+            # add vertex to tri mapping
+            for v in tri:
+                if v in vertex_to_tri:
+                    vertex_to_tri[v] += [tuple(tri)]
+                else:
+                    vertex_to_tri[v] = [tuple(tri)]
+
+            # add edges to tri mapping
+            tri_verts = [cvh_verts[i] for i in tri]
+            s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
+            s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
+            s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
+            for seg in [s1, s2, s3]:
+                k = seg.tup
+                if k in edge_to_tri:
+                    edge_to_tri[k] += [tuple(tri)]
+                else:
+                    edge_to_tri[k] = [tuple(tri)]
+
+            # add triangle to graph with prior probability estimate
+            p = self._compute_proj_area(tri_verts) / (4 * math.pi)
+            nodes[tuple(tri)] = Mesh3D._GraphVertex(p, tri)
+
+        # connect nodes in the graph based on geometric toppling criteria
+        # a directed edge between two graph nodes implies that landing on one face will lead to toppling onto its successor
+        # an outdegree of 0 for any graph node implies it is a sink (the object will come to rest if it topples to this face)
+        for tri in cvh_tris:
+            # vertices
+            tri_verts = [cvh_verts[i] for i in tri]
+
+            # project the center of mass onto the triangle
+            proj_cm = Mesh3D._proj_point_to_plane(tri_verts, cm)
+
+            # update list of top vertices, add edges between vertices as needed
+            if not Mesh3D._point_in_tri(tri_verts, proj_cm):
+                # form segment objects
+                s1 = Mesh3D._Segment(tri_verts[0], tri_verts[1])
+                s2 = Mesh3D._Segment(tri_verts[0], tri_verts[2])
+                s3 = Mesh3D._Segment(tri_verts[1], tri_verts[2])
+
+                # compute the closest edges
+                closest_edges = Mesh3D._closest_segment(proj_cm, [s1, s2, s3])
+
+                # choose the closest edge based on the midpoint of the triangle segments
+                if len(closest_edges) == 1:
+                    closest_edge = closest_edges[0]
+                else:
+                    closest_edge = Mesh3D._closer_segment(proj_cm, closest_edges[0], closest_edges[1])                
+            
+                # compute the topple face from the closest edge
+                for face in edge_to_tri[closest_edge.tup]:
+                    if list(face) != list(tri):
+                        topple_face = face
+                predecessor = nodes[tuple(tri)]
+                successor = nodes[tuple(topple_face)]
+                predecessor.add_edge(successor)
+        
+        # save to class variable
+        self.face_dag_ = Mesh3D._FaceDAG(cvh_mesh, nodes, vertex_to_tri, edge_to_tri)
 
     class _Segment:
         """Object representation of a finite line segment in 3D space.
@@ -1351,6 +1592,26 @@ class Mesh3D(object):
             else:
                 return (tuple(self.p2), tuple(self.p1))
 
+    class _FaceDAG:
+        """ A directed acyclic graph specifying the topppling dependency structure
+        for faces of a given mesh geometry with a specific center of mass.
+        Useful for quasi-static stable pose analysis.
+
+        Attributes
+        ----------
+        mesh : :obj:`Mesh3D`
+            the 3D triangular mesh that the DAG refers to (usually the convex hull) 
+        nodes : :obj:`dict` mapping 3-`tuple` of integers (triangles) to :obj:`Mesh3D._GraphVertex`
+            the nodes in the DAG
+        vertex_to_tri : :obj:`dict` mapping :obj:`int` (vertex indices) to 3-`tuple` of integers (triangles)
+        edge_to_tri : :obj:`dict` mapping 2-`tuple` of integers (edges) to 3-`tuple` of integers (triangles)
+        """
+        def __init__(self, mesh, nodes, vertex_to_tri, edge_to_tri):
+            self.mesh = mesh
+            self.nodes = nodes
+            self.vertex_to_tri = vertex_to_tri
+            self.edge_to_tri = edge_to_tri
+
     class _GraphVertex:
         """A directed graph vertex that links a probability to a face.
         """
@@ -1371,9 +1632,13 @@ class Mesh3D(object):
             self.children = []
             self.parents = []
             self.face = face
-            self.is_sink = True if not self.children else False
             self.has_parent = False
             self.num_parents = 0
+            self.sink = None
+
+        @property
+        def is_sink(self):
+            return len(self.children) == 0
 
         def add_edge(self, child):
             """Connects this vertex to the input child vertex.
@@ -1383,7 +1648,6 @@ class Mesh3D(object):
             child : :obj:`_GraphVertex`
                 The child to link to.
             """
-            self.is_sink = False
             self.children.append(child)
             child.parents.append(self)
             child.has_parent = True
@@ -1516,7 +1780,64 @@ class Mesh3D(object):
         return min_segs
 
     @staticmethod
-    def _compute_prob_map(vertices):
+    def _closer_segment(point, s1, s2):
+        """ Compute which segment is closer to a given point by seeing
+        which side of the midline between the two segments the point falls on.
+
+        Parameters
+        ----------
+        point : :obj:`numpy.ndarray`
+            3d array containing point projected onto plane spanned by s1, s1
+        s1 : :obj:`Mesh3D._Segment`
+            first segment to check
+        s2 : :obj:`Mesh3D._Segment`
+            second segment to check
+
+        Returns
+        -------
+        :obj:`Mesh3D._Segment`
+            best segment to check        
+        """
+        # find the shared vertex and compute the midline between the segments
+        if np.allclose(s1.p1, s2.p1):
+            p = s1.p1
+            l1 = s1.p2 - p
+            l2 = s2.p2 - p
+        elif np.allclose(s1.p2, s2.p1):
+            p = s1.p2
+            l1 = s1.p1 - p
+            l2 = s2.p2 - p
+        elif np.allclose(s1.p1, s2.p2):
+            p = s1.p1
+            l1 = s1.p2 - p
+            l2 = s2.p1 - p
+        else:
+            p = s1.p2
+            l1 = s1.p1 - p
+            l2 = s2.p1 - p
+        v = point - p
+        midline = 0.5 * (l1 + l2)
+
+        # compute projection onto the midline
+        if np.linalg.norm(midline) == 0:
+            raise ValueError('Illegal triangle')
+        alpha = midline.dot(v) / midline.dot(midline)
+        w = alpha * midline
+
+        # compute residual (component of query point orthogonal to midline)
+        x = v - w
+
+        # figure out which line is on the same side of the midline
+        # as the residual
+        d1 = x.dot(l1)
+        d2 = x.dot(l2)
+        closer_segment = s2
+        if d1 > d2:
+            closer_segment = s1
+        return closer_segment
+
+    @staticmethod
+    def _compute_prob_map(vertices, cvh_verts, cm):
         """Creates a map from faces to static stability probabilities.
 
         Parameters
@@ -1528,6 +1849,7 @@ class Mesh3D(object):
         :obj:`dictionary` of :obj:`tuple` of int to float
             Maps tuple representations of faces to probabilities.
         """
+        # follow the child nodes of each vertex until a sink, then add in the resting probability
         prob_mapping = {}
         for vertex in vertices:
             c = vertex
@@ -1541,10 +1863,13 @@ class Mesh3D(object):
             if tuple(c.face) not in prob_mapping.keys():
                 prob_mapping[tuple(c.face)] = 0.0
             prob_mapping[tuple(c.face)] += vertex.probability
+            vertex.sink = c
 
+        # set resting probabilities of faces to zero
         for vertex in vertices:
             if not vertex.is_sink:
                 prob_mapping[tuple(vertex.face)] = 0
+
         return prob_mapping
 
 if __name__ == '__main__':

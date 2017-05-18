@@ -217,7 +217,7 @@ class Sdf3D(Sdf):
     min_coords_z = [0, 1, 2, 4]
     max_coords_z = [3, 5, 6, 7]
 
-    def __init__(self, sdf_data, origin, resolution, use_abs = True):
+    def __init__(self, sdf_data, origin, resolution, use_abs=True, T_sdf_world=RigidTransform(from_frame='sdf', to_frame='world')):
         self.data_ = sdf_data
         self.origin_ = origin
         self.resolution_ = resolution
@@ -229,29 +229,39 @@ class Sdf3D(Sdf):
         self.center_ = 0.5 * (np.min(spts, axis=0) + np.max(spts, axis=0))
         self.points_buf_ = np.zeros([Sdf3D.num_interpolants, 3], dtype=np.int)
         self.coords_buf_ = np.zeros([3,])
+        self.pts_ = None
 
         # tranform sdf basis to grid (X and Z axes are flipped!)
-        t_sdf_grid = self.resolution_ * self.center_
-        s_sdf_grid = 1.0 / self.resolution_
-        self.T_sdf_grid_ = SimilarityTransform(translation=t_sdf_grid,
-                                               scale=s_sdf_grid,
-                                               from_frame='sdf',
-                                               to_frame='grid')
-        self.T_grid_sdf_ = self.T_sdf_grid_.inverse()
+        t_world_grid = self.resolution_ * self.center_
+        s_world_grid = 1.0 / self.resolution_
+        self.T_world_grid_ = SimilarityTransform(translation=t_world_grid,
+                                                 scale=s_world_grid,
+                                                 from_frame='world',
+                                                 to_frame='grid')
+        self.T_grid_world_ = self.T_world_grid_.inverse()
+        self.T_sdf_world_ = T_sdf_world
+        self.T_world_sdf_ = self.T_sdf_world_.inverse()
+        self.T_sdf_grid_ = self.T_world_grid_ * self.T_sdf_world_
+        self.T_grid_sdf_ = self.T_world_sdf_ * self.T_grid_world_
 
         # optionally use only the absolute values (useful for non-closed meshes in 3D)
+        self.use_abs_ = use_abs
         if use_abs:
             self.data_ = np.abs(self.data_)
 
-        self._compute_flat_indices()
         self._compute_gradients()
 
-    def _compute_flat_indices(self):
+    def transform(self, delta_T):
+        """ Creates a new SDF with a given pose with respect to world coordinates.
+
+        Parameters
+        ----------
+        delta_T : :obj:`core.RigidTransform`
+            transform from cur sdf to transformed sdf coords
         """
-        Gets the indices of the flattened array
-        """
-        [x_ind, y_ind, z_ind] = np.indices(self.dims_)
-        self.pts_ = np.c_[x_ind.flatten().T, np.c_[y_ind.flatten().T, z_ind.flatten().T]].astype(np.float32)
+        new_T_sdf_world = self.T_sdf_world_ * delta_T.inverse().as_frames('sdf', 'sdf')
+        return Sdf3D(self.data_, self.origin_, self.resolution_, use_abs=self.use_abs_,
+                     T_sdf_world=new_T_sdf_world)
 
     def _signed_distance(self, coords):
         """Returns the signed distance at the given coordinates, interpolating
@@ -540,8 +550,25 @@ class Sdf3D(Sdf):
 
         return surface_points, surface_vals
 
-    def transform(self, delta_T, detailed = False):
-        """Transform the grid by pose T and scale with canonical reference
+    def rescale(self, scale):
+        """ Rescale an SDF by a given scale factor.
+
+        Parameters
+        ----------
+        scale : float
+            the amount to scale the SDF
+
+        Returns
+        -------
+        :obj:`Sdf3D`
+            new sdf with given scale
+        """
+        resolution_tf = scale * self.resolution_
+        return Sdf3D(self.data_, self.origin_, resolution_tf, use_abs=self.use_abs_,
+                     T_sdf_world=self.T_sdf_world_)
+
+    def transform_dense(self, delta_T, detailed = False):
+        """ Transform the grid by pose T and scale with canonical reference
         frame at the SDF center with axis alignment.
 
         Parameters
@@ -551,14 +578,20 @@ class Sdf3D(Sdf):
         detailed : bool
             whether or not to use interpolation
 
-        Params:
-            (similarity transform 3d): similarity tf
-            (bool): detailed - whether or not to do the dirty, fast method
-        Returns:
-            (SDF): new sdf with grid warped by T
+        Returns
+        -------
+        :obj:`Sdf3D`
+            new sdf with grid warped by T
         """
         # map all surface points to their new location
         start_t = time.clock()
+        
+        # form points array
+        if self.pts_ is None:
+            [x_ind, y_ind, z_ind] = np.indices(self.dims_)
+            self.pts_ = np.c_[x_ind.flatten().T, np.c_[y_ind.flatten().T, z_ind.flatten().T]].astype(np.float32)
+
+        # transform points
         num_pts = self.pts_.shape[0]
         pts_sdf = self.T_grid_sdf_ * PointCloud(self.pts_.T, frame='grid')
         pts_sdf_tf = delta_T.as_frames('sdf', 'sdf') * pts_sdf
@@ -572,11 +605,8 @@ class Sdf3D(Sdf):
         origin_tf = self.T_sdf_grid_ * origin_sdf_tf
         origin_tf = origin_tf.data
 
-        # rescale the resolution
-        scale = 1.0
-        if isinstance(delta_T, SimilarityTransform):
-            scale = delta_T.scale
-        resolution_tf = scale * self.resolution_
+        # use same resolution (since indices will be rescaled)
+        resolution_tf = self.resolution_
         origin_res_t = time.clock()
 
         # add each point to the new pose
@@ -605,7 +635,7 @@ class Sdf3D(Sdf):
         logging.debug('Sdf3D: Time to transform coords: %f' %(all_points_t - start_t))
         logging.debug('Sdf3D: Time to transform origin: %f' %(origin_res_t - all_points_t))
         logging.debug('Sdf3D: Time to transfer sd: %f' %(tf_t - origin_res_t))
-        return Sdf3D(sdf_data_tf_grid, origin_tf, resolution_tf)
+        return Sdf3D(sdf_data_tf_grid, origin_tf, resolution_tf, use_abs=self._use_abs_, T_sdf_world=self.T_sdf_world_)
 
     def transform_pt_obj_to_grid(self, x_sdf, direction = False):
         """ Converts a point in sdf coords to the grid basis. If direction then don't translate.
@@ -701,6 +731,9 @@ class Sdf3D(Sdf):
                 t_zc = possible_t[i]
 
         # if no positive roots find min
+        if np.abs(w[0]) < 1e-10:
+            return None
+
         if t_zc is None:
             t_zc = -w[1] / (2 * w[0])
 
