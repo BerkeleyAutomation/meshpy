@@ -26,7 +26,7 @@ requirements = [
 ]
 
 setup(name='meshpy',
-    version='0.1.dev0',
+    version='0.1.0',
     description='MeshPy project code',
     author='Matt Matl',
     author_email='mmatl@berkeley.edu',

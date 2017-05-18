@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
+project(meshpy)
+
 FIND_PACKAGE(PythonInterp)
 FIND_PACKAGE(PythonLibs)
 find_package(OpenGL REQUIRED)
