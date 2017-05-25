@@ -426,7 +426,7 @@ class VirtualCamera(object):
         self._scene[name] = None
 
     def images(self, mesh, object_to_camera_poses,
-               mat_props=None, light_props=None, debug=False):
+               mat_props=None, light_props=None, enable_lighting=True, debug=False):
         """Render images of the given mesh at the list of object to camera poses.
 
         Parameters
@@ -439,6 +439,8 @@ class VirtualCamera(object):
             Material properties for the mesh
         light_props : :obj:`MaterialProperties`
             Lighting properties for the scene
+        enable_lighting : bool
+            Whether or not to enable lighting
         debug : bool
             Whether or not to debug the C++ meshrendering code.
 
@@ -492,6 +494,7 @@ class VirtualCamera(object):
                                           norms_arr,
                                           mat_props_arr,
                                           light_props_arr,
+                                          enable_lighting,
                                           debug)
             color_ims.extend(c)
             depth_ims.extend(d)
@@ -570,10 +573,17 @@ class VirtualCamera(object):
                 T_stp_camera.from_frame = 'stp'
                 object_to_camera_poses.append(T_stp_camera.dot(T_obj_stp))
 
+        # set lighting mode
+        enable_lighting = True
+        if render_mode == RenderMode.SEGMASK or render_mode == RenderMode.DEPTH or \
+           render_mode == RenderMode.DEPTH_SCENE:
+            enable_lighting = False
+
         # render both image types (doesn't really cost any time)
         color_ims, depth_ims = self.images(mesh, object_to_camera_poses,
                                            mat_props=mat_props,
                                            light_props=light_props,
+                                           enable_lighting=enable_lighting,
                                            debug=debug)
 
         # convert to image wrapper classes

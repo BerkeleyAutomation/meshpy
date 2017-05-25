@@ -26,7 +26,7 @@ if __name__ == '__main__':
     parser.add_argument('mesh_filename', type=str, help='filename for .OBJ mesh file to render')
     args = parser.parse_args()
 
-    vis_normals = True
+    vis_normals = False
 
     # read data
     mesh_filename = args.mesh_filename
@@ -57,6 +57,8 @@ if __name__ == '__main__':
                                          shininess=0)
 
     for k, stable_pose in enumerate(stable_poses):
+        logging.info('Rendering stable pose %d' %(k))
+
         # set resting pose
         T_obj_world = mesh.get_T_surface_obj(stable_pose.T_obj_table).as_frames('obj', 'world')
     
@@ -112,15 +114,17 @@ if __name__ == '__main__':
 
         # render depth image
         render_start = time.time()
+        IPython.embed()
         renders = virtual_camera.wrapped_images(mesh,
                                                 [T_obj_camera],
-                                                RenderMode.COLOR_SCENE,
+                                                RenderMode.RGBD_SCENE,
                                                 mat_props=mat_props,
                                                 light_props=light_props,
-                                                debug=True)
+                                                debug=False)
         render_stop = time.time()
         logging.info('Render took %.3f sec' %(render_stop-render_start))
 
         vis.subplot(d,d,k+1)
-        vis.imshow(renders[0].image.to_grayscale())
+        vis.imshow(renders[0].image.color)
+        #vis.imshow(renders[0].image.depth)
     vis.show()

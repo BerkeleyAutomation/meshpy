@@ -11,15 +11,11 @@ from sdf import Sdf, Sdf3D
 from sdf_file import SdfFile
 from stable_pose import StablePose
 from stp_file import StablePoseFile
-from urdf_writer import UrdfWriter
+from urdf_writer import UrdfWriter, convex_decomposition
 from lighting import MaterialProperties, LightingProperties
 
-try:
-    from mesh_renderer import ViewsphereDiscretizer, PlanarWorksurfaceDiscretizer, VirtualCamera, SceneObject
-    from random_variables import CameraSample, RenderSample, UniformViewsphereRandomVariable, UniformPlanarWorksurfaceRandomVariable, UniformPlanarWorksurfaceImageRandomVariable
-except:
-    print 'Unable to import mesh rendering! Likely due to missing Boost.Numpy'
-    print 'Boost.Numpy can be installed following the instructions in https://github.com/ndarray/Boost.NumPy'
+from mesh_renderer import ViewsphereDiscretizer, PlanarWorksurfaceDiscretizer, VirtualCamera, SceneObject
+from random_variables import CameraSample, RenderSample, UniformViewsphereRandomVariable, UniformPlanarWorksurfaceRandomVariable, UniformPlanarWorksurfaceImageRandomVariable
 
 __all__ = ['Mesh3D',
            'ViewsphereDiscretizer', 'PlanarWorksurfaceDiscretizer', 'VirtualCamera', 'SceneObject',
@@ -34,6 +30,6 @@ __all__ = ['Mesh3D',
            'UniformViewsphereRandomVariable',
            'UniformPlanarWorksurfaceRandomVariable',
            'UniformPlanarWorksurfaceImageRandomVariable'
-           'UrdfWriter',
+           'UrdfWriter', 'convex_decomposition',
            'MaterialProperties'
        ]

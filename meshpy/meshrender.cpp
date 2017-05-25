@@ -43,6 +43,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
                                  boost::python::numeric::array norms,
                                  boost::python::numeric::array mat_props,
                                  boost::python::numeric::array light_props,
+				 bool enable_lighting = false,
                                  bool debug = false)
 {
   // init rendering vars
@@ -117,100 +118,86 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   OSMesaPixelStore(OSMESA_Y_UP, 0);     
   
   // setup material properties
-  // GLfloat mat_specular[] = { 0.0, 0.0, 0.0, 0.0 };
-  // GLfloat mat_shininess[] = { 50.0 };
-  GLfloat mat_ambient[4];
-  GLfloat mat_diffuse[4];
-  GLfloat mat_specular[4];
-  GLfloat mat_shininess[1];
-  mat_ambient[0] = (GLfloat)mat_props_buffer[mat_ambient_off + 0];
-  mat_ambient[1] = (GLfloat)mat_props_buffer[mat_ambient_off + 1];
-  mat_ambient[2] = (GLfloat)mat_props_buffer[mat_ambient_off + 2];
-  mat_ambient[3] = (GLfloat)mat_props_buffer[mat_ambient_off + 3];
+  if (enable_lighting) {
+    GLfloat mat_ambient[4];
+    GLfloat mat_diffuse[4];
+    GLfloat mat_specular[4];
+    GLfloat mat_shininess[1];
+    mat_ambient[0] = (GLfloat)mat_props_buffer[mat_ambient_off + 0];
+    mat_ambient[1] = (GLfloat)mat_props_buffer[mat_ambient_off + 1];
+    mat_ambient[2] = (GLfloat)mat_props_buffer[mat_ambient_off + 2];
+    mat_ambient[3] = (GLfloat)mat_props_buffer[mat_ambient_off + 3];
+    
+    mat_diffuse[0] = (GLfloat)mat_props_buffer[mat_diffuse_off + 0];
+    mat_diffuse[1] = (GLfloat)mat_props_buffer[mat_diffuse_off + 1];
+    mat_diffuse[2] = (GLfloat)mat_props_buffer[mat_diffuse_off + 2];
+    mat_diffuse[3] = (GLfloat)mat_props_buffer[mat_diffuse_off + 3];
 
-  mat_diffuse[0] = (GLfloat)mat_props_buffer[mat_diffuse_off + 0];
-  mat_diffuse[1] = (GLfloat)mat_props_buffer[mat_diffuse_off + 1];
-  mat_diffuse[2] = (GLfloat)mat_props_buffer[mat_diffuse_off + 2];
-  mat_diffuse[3] = (GLfloat)mat_props_buffer[mat_diffuse_off + 3];
+    mat_specular[0] = (GLfloat)mat_props_buffer[mat_specular_off + 0];
+    mat_specular[1] = (GLfloat)mat_props_buffer[mat_specular_off + 1];
+    mat_specular[2] = (GLfloat)mat_props_buffer[mat_specular_off + 2];
+    mat_specular[3] = (GLfloat)mat_props_buffer[mat_specular_off + 3];
+    
+    mat_shininess[0] = (GLfloat)mat_props_buffer[mat_shininess_off + 0];
 
-  mat_specular[0] = (GLfloat)mat_props_buffer[mat_specular_off + 0];
-  mat_specular[1] = (GLfloat)mat_props_buffer[mat_specular_off + 1];
-  mat_specular[2] = (GLfloat)mat_props_buffer[mat_specular_off + 2];
-  mat_specular[3] = (GLfloat)mat_props_buffer[mat_specular_off + 3];
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glShadeModel(GL_SMOOTH);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
+    
+    // setup lighting properties
+    GLfloat light_ambient[4];
+    GLfloat light_diffuse[4];
+    GLfloat light_specular[4];
+    GLfloat light_position[4];
+    GLfloat light_direction[3];
+    GLfloat light_spot_cutoff[1];
 
-  mat_shininess[0] = (GLfloat)mat_props_buffer[mat_shininess_off + 0];
+    light_ambient[0] = (GLfloat)light_props_buffer[light_ambient_off + 0];
+    light_ambient[1] = (GLfloat)light_props_buffer[light_ambient_off + 1];
+    light_ambient[2] = (GLfloat)light_props_buffer[light_ambient_off + 2];
+    light_ambient[3] = (GLfloat)light_props_buffer[light_ambient_off + 3];
 
-  glClearColor(0.0, 0.0, 0.0, 0.0);
-  glShadeModel(GL_SMOOTH);
-  glMaterialfv(GL_FRONT_BACK, GL_AMBIENT, mat_ambient);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
+    light_diffuse[0] = (GLfloat)light_props_buffer[light_diffuse_off + 0];
+    light_diffuse[1] = (GLfloat)light_props_buffer[light_diffuse_off + 1];
+    light_diffuse[2] = (GLfloat)light_props_buffer[light_diffuse_off + 2];
+    light_diffuse[3] = (GLfloat)light_props_buffer[light_diffuse_off + 3];
 
-  // setup lighting properties
-  //GLfloat light_position[] = { 0.0, 0.0, -10.0, 0.0 };
-  GLfloat light_ambient[4];
-  GLfloat light_diffuse[4];
-  GLfloat light_specular[4];
-  GLfloat light_position[4];
-  GLfloat light_direction[3];
-  GLfloat light_spot_cutoff[1];
+    light_specular[0] = (GLfloat)light_props_buffer[light_specular_off + 0];
+    light_specular[1] = (GLfloat)light_props_buffer[light_specular_off + 1];
+    light_specular[2] = (GLfloat)light_props_buffer[light_specular_off + 2];
+    light_specular[3] = (GLfloat)light_props_buffer[light_specular_off + 3];
+    
+    light_position[0] = (GLfloat)light_props_buffer[light_position_off + 0];
+    light_position[1] = (GLfloat)light_props_buffer[light_position_off + 1];
+    light_position[2] = (GLfloat)light_props_buffer[light_position_off + 2];
+    light_position[3] = 1.0; // always set w to 1
 
-  light_ambient[0] = (GLfloat)light_props_buffer[light_ambient_off + 0];
-  light_ambient[1] = (GLfloat)light_props_buffer[light_ambient_off + 1];
-  light_ambient[2] = (GLfloat)light_props_buffer[light_ambient_off + 2];
-  light_ambient[3] = (GLfloat)light_props_buffer[light_ambient_off + 3];
+    light_direction[0] = (GLfloat)light_props_buffer[light_direction_off + 0];
+    light_direction[1] = (GLfloat)light_props_buffer[light_direction_off + 1];
+    light_direction[2] = (GLfloat)light_props_buffer[light_direction_off + 2];
 
-  light_diffuse[0] = (GLfloat)light_props_buffer[light_diffuse_off + 0];
-  light_diffuse[1] = (GLfloat)light_props_buffer[light_diffuse_off + 1];
-  light_diffuse[2] = (GLfloat)light_props_buffer[light_diffuse_off + 2];
-  light_diffuse[3] = (GLfloat)light_props_buffer[light_diffuse_off + 3];
+    light_spot_cutoff[0] = (GLfloat)light_props_buffer[light_spot_cutoff_off + 0];
 
-  light_specular[0] = (GLfloat)light_props_buffer[light_specular_off + 0];
-  light_specular[1] = (GLfloat)light_props_buffer[light_specular_off + 1];
-  light_specular[2] = (GLfloat)light_props_buffer[light_specular_off + 2];
-  light_specular[3] = (GLfloat)light_props_buffer[light_specular_off + 3];
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
+    glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, light_spot_cutoff);
+    
+    if (debug) {
+      std::cout << "Light pos " << light_position[0] << " " << light_position[1] << " " << light_position[2] << " " << light_position[3] << std::endl;
+      std::cout << "Light dir " << light_direction[0] << " " << light_direction[1] << " " << light_direction[2] << std::endl;
+    }
 
-  light_position[0] = (GLfloat)light_props_buffer[light_position_off + 0];
-  light_position[1] = (GLfloat)light_props_buffer[light_position_off + 1];
-  light_position[2] = (GLfloat)light_props_buffer[light_position_off + 2];
-  light_position[3] = 1.0; // always set w to 1
-
-  light_direction[0] = (GLfloat)light_props_buffer[light_direction_off + 0];
-  light_direction[1] = (GLfloat)light_props_buffer[light_direction_off + 1];
-  light_direction[2] = (GLfloat)light_props_buffer[light_direction_off + 2];
-
-  light_spot_cutoff[0] = (GLfloat)light_props_buffer[light_spot_cutoff_off + 0];
-
-  glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-  glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-  glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-  glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-  glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, light_spot_cutoff);
-
-  // GLfloat light1_position[4];
-  // light1_position[0] = light_position[0]
-  // light1_position[1] = light_position[1] + 0.1
-  // light1_position[2] = light_position[2]
-  // light1_position[3] = light_position[3]
-  // glLightfv(GL_LIGHT1, GL_AMBIENT, light_ambient);
-  // glLightfv(GL_LIGHT1, GL_DIFFUSE, light_diffuse);
-  // glLightfv(GL_LIGHT1, GL_SPECULAR, light_specular);
-  // glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
-  // glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction);
-  // glLightfv(GL_LIGHT1, GL_SPOT_CUTOFF, light_spot_cutoff);
-
-  if (debug) {
-    std::cout << "Light pos " << light_position[0] << " " << light_position[1] << " " << light_position[2] << " " << light_position[3] << std::endl;
-    std::cout << "Light dir " << light_direction[0] << " " << light_direction[1] << " " << light_direction[2] << std::endl;
+    // enable lighting
+    glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
   }
-
-  // enable lighting
-  glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
-  glEnable(GL_LIGHTING);
-  glEnable(GL_LIGHT0);
-  //glEnable(GL_LIGHT1);
 
   // set color
   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);

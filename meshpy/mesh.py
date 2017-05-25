@@ -6,13 +6,14 @@ import math
 import Queue
 import os
 import random
+from subprocess import Popen
 import sys
 
 import numpy as np
 import scipy.spatial as ss
 import sklearn.decomposition
 
-from core import RigidTransform, Point, PointCloud
+from core import RigidTransform, Point, PointCloud, NormalCloud
 
 import obj_file
 import stable_pose as sp
@@ -737,9 +738,17 @@ class Mesh3D(object):
         vertex_cloud = PointCloud(self.vertices_.T, frame=T.from_frame)
         vertex_cloud_tf = T * vertex_cloud
         vertices = vertex_cloud_tf.data.T
+        if self.normals_ is not None:
+            normal_cloud = NormalCloud(self.normals_.T, frame=T.from_frame)
+            normal_cloud_tf = T * normal_cloud
+            normals = normal_cloud_tf.data.T
         com = Point(self.center_of_mass_, frame=T.from_frame)
         com_tf = T * com
+
+        if self.normals_ is not None:
+            return Mesh3D(vertices.copy(), self.triangles.copy(), normals=normals.copy(), center_of_mass=com_tf.data)
         return Mesh3D(vertices.copy(), self.triangles.copy(), center_of_mass=com_tf.data)
+            
 
     def random_points(self, n_points):
         """Generate uniformly random points on the surface of the mesh.
@@ -866,8 +875,10 @@ class Mesh3D(object):
         """
         hull = ss.ConvexHull(self.vertices_)
         hull_tris = hull.simplices
-        # TODO do normals properly...
-        cvh_mesh = Mesh3D(np.copy(self.vertices_), np.copy(hull_tris), center_of_mass=self.center_of_mass_)
+        if self.normals_ is None:
+            cvh_mesh = Mesh3D(self.vertices_.copy(), hull_tris.copy(), center_of_mass=self.center_of_mass_)
+        else:
+            cvh_mesh = Mesh3D(self.vertices_.copy(), hull_tris.copy(), normals=self.normals_.copy(), center_of_mass=self.center_of_mass_)
         cvh_mesh.remove_unreferenced_vertices()
         return cvh_mesh
 

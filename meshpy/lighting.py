@@ -28,12 +28,20 @@ class MaterialProperties(object):
                  specular=0,
                  shininess=0):
         # set params
-        self.color = np.array(color)
+        self.color = np.array(color).astype(np.uint8)
         self.ambient = ambient
         self.diffuse = diffuse
         self.specular = specular
         self.shininess = shininess
-                 
+
+    def __str__(self):
+        s = ''
+        s += 'Color: %s\n' %(str(self.color))
+        s += 'Ambient: %f\n' %(self.ambient)
+        s += 'Diffuse: %f\n' %(self.diffuse)
+        s += 'Specular: %f\n' %(self.specular)
+        s += 'Shininess: %f\n' %(self.shininess)
+        return s
 
     @property
     def arr(self):
@@ -62,6 +70,15 @@ class LightingProperties(object):
         self.T_light_camera = T_light_camera
         self.cutoff = cutoff
         self.T_light_obj = None
+
+    def __str__(self):
+        s = ''
+        s += 'Ambient: %f\n' %(self.ambient)
+        s += 'Diffuse: %f\n' %(self.diffuse)
+        s += 'Specular: %f\n' %(self.specular)
+        s += 'T_light_camera: %s\n' %(str(self.T_light_camera))
+        s += 'Cutoff: %f\n' %(self.cutoff)
+        return s
 
     def set_pose(self, T_obj_camera):
         self.T_light_obj = T_obj_camera.inverse() * self.T_light_camera.as_frames('light', T_obj_camera.to_frame)
