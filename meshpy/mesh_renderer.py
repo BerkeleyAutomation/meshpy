@@ -15,8 +15,8 @@ try:
 except:
     pass
 
-from core import Point, RigidTransform
-from core.utils import sph2cart, cart2sph
+from autolab_core import Point, RigidTransform
+from autolab_core.utils import sph2cart, cart2sph
 from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, RgbdImage, ObjectRender, RenderMode
 from meshpy import MaterialProperties, LightingProperties
 

@@ -10,23 +10,18 @@ import os
 class PostDevelopCmd(develop):
     def run(self):
         os.system('sh install_meshrender.sh')
-        print "HI"
         develop.run(self)
 
 class PostInstallCmd(install):
     def run(self):
         os.system('sh install_meshrender.sh')
-        print "HI2"
         install.run(self)
 
 requirements = [
     'numpy',
-    'perception',
-    'core',
     'scipy',
     'sklearn',
     'Pillow',
-    'nearpy'
 ]
 
 setup(name='meshpy',

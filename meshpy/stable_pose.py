@@ -5,7 +5,7 @@ Author: Matt Matl and Nikhil Sharma
 """
 import numpy as np
 
-from core import RigidTransform
+from autolab_core import RigidTransform
 
 d_theta = np.deg2rad(1)
 

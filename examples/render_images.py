@@ -11,8 +11,8 @@ import os
 import sys
 import time
 
-import core.utils as utils
-from core import NormalCloud, PointCloud, RigidTransform
+import autolab_core.utils as utils
+from autolab_core import NormalCloud, PointCloud, RigidTransform
 from perception import CameraIntrinsics, ObjectRender, RenderMode
 from meshpy import MaterialProperties, LightingProperties, ObjFile, VirtualCamera, ViewsphereDiscretizer, SceneObject
 

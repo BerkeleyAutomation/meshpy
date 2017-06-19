@@ -13,7 +13,7 @@ import numpy as np
 import scipy.spatial as ss
 import sklearn.decomposition
 
-from core import RigidTransform, Point, PointCloud, NormalCloud
+from autolab_core import RigidTransform, Point, PointCloud, NormalCloud
 
 import obj_file
 import stable_pose as sp
@@ -922,7 +922,7 @@ class Mesh3D(object):
 
         Parameters
         ----------
-        T_obj_world : :obj:`core.RigidTransform`
+        T_obj_world : :obj:`autolab_core.RigidTransform`
             transformation from object to table basis (z-axis upward) specifying the orientation of the mesh
         eps : float
             numeric tolerance in cone projection solver
