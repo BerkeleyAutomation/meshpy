@@ -9,7 +9,7 @@ import numpy as np
 import os
 import sys
 
-import core.utils as utils
+import autolab_core.utils as utils
 from perception import BinaryImage
 from meshpy import ImageToMeshConverter, ObjFile
 from visualization import Visualizer2D as vis2d

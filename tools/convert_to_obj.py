@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 
-import core.utils as utils
+import autolab_core.utils as utils
 
 SUPPORTED_EXTENSIONS = ['.wrl', '.obj', '.off', '.ply', '.stl', '.3ds']
 

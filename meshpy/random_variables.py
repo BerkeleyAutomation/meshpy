@@ -8,8 +8,8 @@ import logging
 import numpy as np
 import scipy.stats as ss
 
-from core import Point, RigidTransform, RandomVariable
-from core.utils import sph2cart, cart2sph
+from autolab_core import Point, RigidTransform, RandomVariable
+from autolab_core.utils import sph2cart, cart2sph
 from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, ObjectRender, RenderMode
 
 from mesh_renderer import VirtualCamera, SceneObject
@@ -160,7 +160,7 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
         ----------
         frame: :obj:`str`
             string name of the camera frame
-        config : :obj:`core.YamlConfig`
+        config : :obj:`autolab_core.YamlConfig`
             configuration containing parameters of random variable
         num_prealloc_samples : int
             Number of preallocated samples.
@@ -392,7 +392,7 @@ class UniformPlanarWorksurfaceImageRandomVariable(RandomVariable):
             render modes to use
         frame: :obj:`str`
             string name of the camera frame
-        config : :obj:`core.YamlConfig`
+        config : :obj:`autolab_core.YamlConfig`
             configuration containing parameters of random variable
         stable_pose : :obj:`StablePose`
             stable pose for the mesh to rest in

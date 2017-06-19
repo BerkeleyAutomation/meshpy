@@ -22,7 +22,6 @@ requirements = [
     'scipy',
     'sklearn',
     'Pillow',
-    'nearpy'
 ]
 
 setup(name='meshpy',

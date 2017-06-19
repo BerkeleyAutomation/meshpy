@@ -11,7 +11,7 @@ from numbers import Number
 
 import time
 
-from core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
+from autolab_core import RigidTransform, SimilarityTransform, PointCloud, Point, NormalCloud
 
 from sys import version_info
 
@@ -256,7 +256,7 @@ class Sdf3D(Sdf):
 
         Parameters
         ----------
-        delta_T : :obj:`core.RigidTransform`
+        delta_T : :obj:`autolab_core.RigidTransform`
             transform from cur sdf to transformed sdf coords
         """
         new_T_sdf_world = self.T_sdf_world_ * delta_T.inverse().as_frames('sdf', 'sdf')
