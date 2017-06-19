@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -44,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -84,7 +87,10 @@
           
             
             
-                <p class="caption"><span class="caption-text">Installation Guide</span></p>
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../install/install.html">Installation Instructions</a></li>
 </ul>
@@ -111,8 +117,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">meshpy</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">meshpy</a>
+        
       </nav>
 
 
@@ -121,23 +129,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-    <li>Signed Distance Fields</li>
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Signed Distance Fields</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="../_sources/api/sdf.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -149,8 +174,22 @@
 <h2>Sdf3D<a class="headerlink" href="#sdf3d" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="meshpy.Sdf3D">
-<em class="property">class </em><code class="descclassname">meshpy.</code><code class="descname">Sdf3D</code><span class="sig-paren">(</span><em>sdf_data</em>, <em>origin</em>, <em>resolution</em>, <em>use_abs=True</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">meshpy.</code><code class="descname">Sdf3D</code><span class="sig-paren">(</span><em>sdf_data, origin, resolution, use_abs=True, T_sdf_world=RigidTransform(rotation=[[ 1.  0.  0.]  [ 0.  1.  0.]  [ 0.  0.  1.]], translation=[ 0.  0.  0.], from_frame=sdf, to_frame=world)</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">meshpy.sdf.Sdf</span></code></p>
+<dl class="method">
+<dt id="meshpy.Sdf3D.transform">
+<code class="descname">transform</code><span class="sig-paren">(</span><em>delta_T</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D.transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new SDF with a given pose with respect to world coordinates.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>delta_T</strong> (<code class="xref py py-obj docutils literal"><span class="pre">autolab_core.RigidTransform</span></code>) – transform from cur sdf to transformed sdf coords</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="method">
 <dt id="meshpy.Sdf3D.__getitem__">
 <code class="descname">__getitem__</code><span class="sig-paren">(</span><em>coords</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D.__getitem__" title="Permalink to this definition">¶</a></dt>
@@ -159,14 +198,14 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) &#8211; A or 3-dimensional ndarray that indicates the desired
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) – A or 3-dimensional ndarray that indicates the desired
 coordinates in the grid.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The signed distance at the given coords (interpolated).</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; If the coords vector does not have three entries.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> – If the coords vector does not have three entries.</td>
 </tr>
 </tbody>
 </table>
@@ -180,14 +219,14 @@ coordinates in the grid.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) &#8211; A 3-dimensional ndarray that indicates the desired
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) – A 3-dimensional ndarray that indicates the desired
 coordinates in the grid.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The gradient at the given coords (interpolated).</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; If the coords vector does not have three entries.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> – If the coords vector does not have three entries.</td>
 </tr>
 </tbody>
 </table>
@@ -202,7 +241,7 @@ given coordinate in grid basis.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<em>numpy 3-vector</em>) &#8211; the grid coordinates at which to get the curvature</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<em>numpy 3-vector</em>) – the grid coordinates at which to get the curvature</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>curvature</strong></td>
 </tr>
@@ -222,9 +261,9 @@ computing the tangent plane using SDF interpolation.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) &#8211; A 3-dimensional ndarray that indicates the desired
+<li><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) – A 3-dimensional ndarray that indicates the desired
 coordinates in the grid.</li>
-<li><strong>delta</strong> (<em>float</em>) &#8211; A radius for collecting surface points near the target coords
+<li><strong>delta</strong> (<em>float</em>) – A radius for collecting surface points near the target coords
 for calculating the surface normal.</li>
 </ul>
 </td>
@@ -235,7 +274,7 @@ for calculating the surface normal.</li>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> &#8211; If the coords vector does not have three entries.</p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal"><span class="pre">IndexError</span></code> – If the coords vector does not have three entries.</p>
 </td>
 </tr>
 </tbody>
@@ -250,7 +289,7 @@ for calculating the surface normal.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>grid_basis</strong> (<em>bool</em>) &#8211; If False, the surface points are transformed to the world frame.
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>grid_basis</strong> (<em>bool</em>) – If False, the surface points are transformed to the world frame.
 If True (default), the surface points are left in grid coordinates.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The points on the surface and the signed distances at those points.</td>
@@ -262,21 +301,42 @@ If True (default), the surface points are left in grid coordinates.</td>
 </dd></dl>
 
 <dl class="method">
-<dt id="meshpy.Sdf3D.transform">
-<code class="descname">transform</code><span class="sig-paren">(</span><em>delta_T</em>, <em>detailed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D.transform" title="Permalink to this definition">¶</a></dt>
+<dt id="meshpy.Sdf3D.rescale">
+<code class="descname">rescale</code><span class="sig-paren">(</span><em>scale</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D.rescale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rescale an SDF by a given scale factor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scale</strong> (<em>float</em>) – the amount to scale the SDF</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">new sdf with given scale</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">Sdf3D</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.Sdf3D.transform_dense">
+<code class="descname">transform_dense</code><span class="sig-paren">(</span><em>delta_T</em>, <em>detailed=False</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D.transform_dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform the grid by pose T and scale with canonical reference
 frame at the SDF center with axis alignment.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>delta_T</strong> (<em>SimilarityTransform</em>) &#8211; the transformation from the current frame of reference to the new frame of reference</li>
-<li><strong>detailed</strong> (<em>bool</em>) &#8211; whether or not to use interpolation</li>
-<li><strong>Params</strong> &#8211; (similarity transform 3d): similarity tf
-(bool): detailed - whether or not to do the dirty, fast method</li>
-<li><strong>Returns</strong> &#8211; (SDF): new sdf with grid warped by T</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>delta_T</strong> (<em>SimilarityTransform</em>) – the transformation from the current frame of reference to the new frame of reference</li>
+<li><strong>detailed</strong> (<em>bool</em>) – whether or not to use interpolation</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">new sdf with grid warped by T</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal"><span class="pre">Sdf3D</span></code></p>
 </td>
 </tr>
 </tbody>
@@ -286,14 +346,14 @@ frame at the SDF center with axis alignment.</p>
 <dl class="method">
 <dt id="meshpy.Sdf3D.transform_pt_obj_to_grid">
 <code class="descname">transform_pt_obj_to_grid</code><span class="sig-paren">(</span><em>x_sdf</em>, <em>direction=False</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D.transform_pt_obj_to_grid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a point in sdf coords to the grid basis. If direction then don&#8217;t translate.</p>
+<dd><p>Converts a point in sdf coords to the grid basis. If direction then don’t translate.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_sdf</strong> (<em>numpy 3xN ndarray</em><em> or </em><em>numeric scalar</em>) &#8211; points to transform from sdf basis in meters to grid basis</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_sdf</strong> (<em>numpy 3xN ndarray</em><em> or </em><em>numeric scalar</em>) – points to transform from sdf basis in meters to grid basis</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>x_grid</strong> &#8211; points in grid basis</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>x_grid</strong> – points in grid basis</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy 3xN ndarray or scalar</td>
 </tr>
@@ -304,14 +364,14 @@ frame at the SDF center with axis alignment.</p>
 <dl class="method">
 <dt id="meshpy.Sdf3D.transform_pt_grid_to_obj">
 <code class="descname">transform_pt_grid_to_obj</code><span class="sig-paren">(</span><em>x_grid</em>, <em>direction=False</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Sdf3D.transform_pt_grid_to_obj" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a point in grid coords to the world basis. If direction then don&#8217;t translate.</p>
+<dd><p>Converts a point in grid coords to the world basis. If direction then don’t translate.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_grid</strong> (<em>numpy 3xN ndarray</em><em> or </em><em>numeric scalar</em>) &#8211; points to transform from grid basis to sdf basis in meters</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>x_grid</strong> (<em>numpy 3xN ndarray</em><em> or </em><em>numeric scalar</em>) – points to transform from grid basis to sdf basis in meters</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>x_sdf</strong> &#8211; points in sdf basis (meters)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>x_sdf</strong> – points in sdf basis (meters)</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy 3xN ndarray</td>
 </tr>
@@ -484,7 +544,7 @@ distances.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) &#8211; A 2- or 3-dimensional ndarray that indicates the desired
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) – A 2- or 3-dimensional ndarray that indicates the desired
 coordinates in the grid.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The signed distance at the given coords (interpolated).</td>
@@ -515,10 +575,10 @@ coordinates in the grid.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) &#8211; A 2- or 3-dimensional ndarray that indicates the desired
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) – A 2- or 3-dimensional ndarray that indicates the desired
 coordinates in the grid.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Is the point on the object&#8217;s surface, and what
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Is the point on the object’s surface, and what
 is the signed distance at that point?</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code> of bool, float</td>
@@ -535,7 +595,7 @@ is the signed distance at that point?</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) &#8211; A 2- or 3-dimensional ndarray that indicates the desired
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coords</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int) – A 2- or 3-dimensional ndarray that indicates the desired
 coordinates in the grid.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Are the coordinates in coords out of bounds?</td>
@@ -553,15 +613,18 @@ coordinates in the grid.</td>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="stable_poses.html" class="btn btn-neutral float-right" title="Stable Poses" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="stable_poses.html" class="btn btn-neutral float-right" title="Stable Poses" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="rendering.html" class="btn btn-neutral" title="Rendering" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="rendering.html" class="btn btn-neutral" title="Rendering" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -595,7 +658,8 @@ coordinates in the grid.</td>
             VERSION:'0.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>

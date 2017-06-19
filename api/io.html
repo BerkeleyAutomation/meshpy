@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -44,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -84,7 +87,10 @@
           
             
             
-                <p class="caption"><span class="caption-text">Installation Guide</span></p>
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../install/install.html">Installation Instructions</a></li>
 </ul>
@@ -113,8 +119,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">meshpy</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">meshpy</a>
+        
       </nav>
 
 
@@ -123,23 +131,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-    <li>File I/O</li>
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>File I/O</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="../_sources/api/io.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -157,7 +182,7 @@
 <dl class="attribute">
 <dt id="ObjFile.filepath">
 <code class="descname">filepath</code><a class="headerlink" href="#ObjFile.filepath" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .obj file associated with this reader/writer.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> – The full path to the .obj file associated with this reader/writer.</p>
 </dd></dl>
 
 <dl class="method">
@@ -168,9 +193,9 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; The full path to the desired .obj file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – The full path to the desired .obj file</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If the file extension is not .obj.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If the file extension is not .obj.</td>
 </tr>
 </tbody>
 </table>
@@ -216,7 +241,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mesh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code>) &#8211; The Mesh3D object to write to the .obj file.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mesh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code>) – The Mesh3D object to write to the .obj file.</td>
 </tr>
 </tbody>
 </table>
@@ -238,7 +263,7 @@
 <dl class="attribute">
 <dt id="OffFile.filepath">
 <code class="descname">filepath</code><a class="headerlink" href="#OffFile.filepath" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .off file associated with this reader/writer.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> – The full path to the .off file associated with this reader/writer.</p>
 </dd></dl>
 
 <dl class="method">
@@ -287,7 +312,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mesh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code>) &#8211; The Mesh3D object to write to the .obj file.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mesh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code>) – The Mesh3D object to write to the .obj file.</td>
 </tr>
 </tbody>
 </table>
@@ -309,7 +334,7 @@
 <dl class="attribute">
 <dt id="SdfFile.filepath">
 <code class="descname">filepath</code><a class="headerlink" href="#SdfFile.filepath" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .sdf or .csv file associated with this reader/writer.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> – The full path to the .sdf or .csv file associated with this reader/writer.</p>
 </dd></dl>
 
 <dl class="method">
@@ -320,9 +345,9 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; The full path to the desired .sdf or .csv file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – The full path to the desired .sdf or .csv file</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If the file extension is not .sdf of .csv.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If the file extension is not .sdf of .csv.</td>
 </tr>
 </tbody>
 </table>
@@ -368,7 +393,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sdf</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Sdf</span></code>) &#8211; An Sdf object to write out.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sdf</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Sdf</span></code>) – An Sdf object to write out.</td>
 </tr>
 </tbody>
 </table>
@@ -390,7 +415,7 @@
 <dl class="attribute">
 <dt id="StablePoseFile.filepath">
 <code class="descname">filepath</code><a class="headerlink" href="#StablePoseFile.filepath" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> &#8211; The full path to the .stp file associated with this reader/writer.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">str</span></code> – The full path to the .stp file associated with this reader/writer.</p>
 </dd></dl>
 
 <dl class="method">
@@ -401,9 +426,9 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; The full path to the desired .stp file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filepath</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – The full path to the desired .stp file</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; If the file extension is not .stp.</td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> – If the file extension is not .stp.</td>
 </tr>
 </tbody>
 </table>
@@ -433,7 +458,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>:obj:`list` of</strong> &#8211; A list of StablePose objects read from the .stp file.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>:obj:`list` of</strong> – A list of StablePose objects read from the .stp file.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">obj`StablePose`</td>
 </tr>
@@ -450,8 +475,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>stable_poses</strong> (<code class="xref py py-obj docutils literal"><span class="pre">list</span></code> of <code class="xref py py-obj docutils literal"><span class="pre">StablePose</span></code>) &#8211; List of stable poses that should be written to the file.</li>
-<li><strong>min_prob</strong> (<em>float</em>) &#8211; The minimum probability for a pose to actually be written to the
+<li><strong>stable_poses</strong> (<code class="xref py py-obj docutils literal"><span class="pre">list</span></code> of <code class="xref py py-obj docutils literal"><span class="pre">StablePose</span></code>) – List of stable poses that should be written to the file.</li>
+<li><strong>min_prob</strong> (<em>float</em>) – The minimum probability for a pose to actually be written to the
 file.</li>
 </ul>
 </td>
@@ -467,15 +492,18 @@ file.</li>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="mesh.html" class="btn btn-neutral float-right" title="Meshes" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="mesh.html" class="btn btn-neutral float-right" title="Meshes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../install/install.html" class="btn btn-neutral" title="Installation Instructions" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../install/install.html" class="btn btn-neutral" title="Installation Instructions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -509,7 +537,8 @@ file.</li>
             VERSION:'0.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>

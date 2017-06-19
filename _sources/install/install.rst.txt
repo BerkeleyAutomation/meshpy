@@ -3,11 +3,11 @@ Installation Instructions
 
 Dependencies
 ~~~~~~~~~~~~
-The `meshpy` module depends on the Berkeley AutoLab's `core`_ and `perception`_ modules,
+The `meshpy` module depends on the Berkeley AutoLab's `autolab_core`_ and `perception`_ modules,
 which can be installed by following instructions in their respective
 repositories.
 
-.. _core: https://github.com/BerkeleyAutomation/core
+.. _autolab_core: https://github.com/BerkeleyAutomation/autolab_core
 .. _perception: https://github.com/BerkeleyAutomation/perception
 
 Rendering using `meshpy` also depends on `OSMesa`_ and `Boost.NumPy`_, and

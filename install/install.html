@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -44,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -84,7 +87,10 @@
           
             
             
-                <p class="caption"><span class="caption-text">Installation Guide</span></p>
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation Guide</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation Instructions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
@@ -115,8 +121,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">meshpy</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">meshpy</a>
+        
       </nav>
 
 
@@ -125,23 +133,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-    <li>Installation Instructions</li>
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Installation Instructions</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="../_sources/install/install.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -151,7 +176,7 @@
 <h1>Installation Instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>The <cite>meshpy</cite> module depends on the Berkeley AutoLab&#8217;s <a class="reference external" href="https://github.com/BerkeleyAutomation/core">core</a> and <a class="reference external" href="https://github.com/BerkeleyAutomation/perception">perception</a> modules,
+<p>The <cite>meshpy</cite> module depends on the Berkeley AutoLab’s <a class="reference external" href="https://github.com/BerkeleyAutomation/autolab_core">autolab_core</a> and <a class="reference external" href="https://github.com/BerkeleyAutomation/perception">perception</a> modules,
 which can be installed by following instructions in their respective
 repositories.</p>
 <p>Rendering using <cite>meshpy</cite> also depends on <a class="reference external" href="http://www.mesa3d.org/osmesa.html">OSMesa</a> and <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost.NumPy</a>, and
@@ -176,7 +201,7 @@ installed with <cite>pip</cite>.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone https://github.com/ndarray/Boost.NumPy.git
 </pre></div>
 </div>
-<p>and following <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost-Numpy&#8217;s installation instructions</a>.</p>
+<p>and following <a class="reference external" href="https://github.com/ndarray/Boost.NumPy">Boost-Numpy’s installation instructions</a>.</p>
 <p>Then to install <cite>meshpy</cite> in your current Python environment, simply
 change directories into the <cite>meshpy</cite> repository and run</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install -e .
@@ -188,7 +213,7 @@ change directories into the <cite>meshpy</cite> repository and run</p>
 </div>
 <p>to install <cite>meshpy</cite> from anywhere.</p>
 <p>To visualize meshes, we highly recommend also installing
-the Berkeley AutoLab&#8217;s <a class="reference external" href="https://github.com/BerkeleyAutomation/visualization">visualization</a> module, which uses <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/">mayavi</a>.
+the Berkeley AutoLab’s <a class="reference external" href="https://github.com/BerkeleyAutomation/visualization">visualization</a> module, which uses <a class="reference external" href="http://docs.enthought.com/mayavi/mayavi/">mayavi</a>.
 This can be installed by cloning the repo:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ git clone git@github.com:BerkeleyAutomation/visualization.git
 </pre></div>
@@ -205,7 +230,7 @@ This can be installed by cloning the repo:</p>
 </div>
 <div class="section" id="building-documentation">
 <h2>Building Documentation<a class="headerlink" href="#building-documentation" title="Permalink to this headline">¶</a></h2>
-<p>Building <cite>meshpy</cite>&#8216;s documentation requires a few extra dependencies &#8211;
+<p>Building <cite>meshpy</cite>’s documentation requires a few extra dependencies –
 specifically, <a class="reference external" href="http://www.sphinx-doc.org/en/1.4.8/">sphinx</a> and a few plugins.</p>
 <p>To install the dependencies required, simply run</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install -r docs_requirements.txt
@@ -236,15 +261,18 @@ to Github.</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../api/io.html" class="btn btn-neutral float-right" title="File I/O" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../api/io.html" class="btn btn-neutral float-right" title="File I/O" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../index.html" class="btn btn-neutral" title="Berkeley AutoLab meshpy Documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../index.html" class="btn btn-neutral" title="Berkeley AutoLab meshpy Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -278,7 +306,8 @@ to Github.</p>
             VERSION:'0.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>

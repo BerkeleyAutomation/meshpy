@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -44,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -84,7 +87,10 @@
           
             
             
-                <p class="caption"><span class="caption-text">Installation Guide</span></p>
+              
+            
+            
+              <p class="caption"><span class="caption-text">Installation Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../install/install.html">Installation Instructions</a></li>
 </ul>
@@ -110,8 +116,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../index.html">meshpy</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">meshpy</a>
+        
       </nav>
 
 
@@ -120,23 +128,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="../index.html">Docs</a> &raquo;</li>
-      
-    <li>Meshes</li>
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Meshes</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="../_sources/api/mesh.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -154,59 +179,59 @@
 <dl class="attribute">
 <dt id="Mesh3D.vertices">
 <code class="descname">vertices</code><a class="headerlink" href="#Mesh3D.vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; A #verts by 3 array, where each row contains an ordered
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – A #verts by 3 array, where each row contains an ordered
 [x,y,z] set that describes one vertex.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.triangles">
 <code class="descname">triangles</code><a class="headerlink" href="#Mesh3D.triangles" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code>  of int &#8211; A #tris by 3 array, where each row contains indices of vertices in
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code>  of int – A #tris by 3 array, where each row contains indices of vertices in
 the <cite>vertices</cite> array that are part of the triangle.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.normals">
 <code class="descname">normals</code><a class="headerlink" href="#Mesh3D.normals" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; A #normals by 3 array, where each row contains a normalized
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – A #normals by 3 array, where each row contains a normalized
 vector. This list should contain one norm per vertex.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.density">
 <code class="descname">density</code><a class="headerlink" href="#Mesh3D.density" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>float</em> &#8211; The density of the mesh.</p>
+<dd><p><em>float</em> – The density of the mesh.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.center_of_mass">
 <code class="descname">center_of_mass</code><a class="headerlink" href="#Mesh3D.center_of_mass" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3D location of the mesh&#8217;s center of mass.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3D location of the mesh’s center of mass.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.mass">
 <code class="descname">mass</code><a class="headerlink" href="#Mesh3D.mass" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>float</em> &#8211; The mass of the mesh (read-only).</p>
+<dd><p><em>float</em> – The mass of the mesh (read-only).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.inertia">
 <code class="descname">inertia</code><a class="headerlink" href="#Mesh3D.inertia" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3x3 inertial matrix of the mesh (read-only).</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3x3 inertial matrix of the mesh (read-only).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.bb_center">
 <code class="descname">bb_center</code><a class="headerlink" href="#Mesh3D.bb_center" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3D location of the center of the mesh&#8217;s minimal bounding box
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3D location of the center of the mesh’s minimal bounding box
 (read-only).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="Mesh3D.centroid">
 <code class="descname">centroid</code><a class="headerlink" href="#Mesh3D.centroid" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3D location of the mesh&#8217;s vertex mean (read-only).</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3D location of the mesh’s vertex mean (read-only).</p>
 </dd></dl>
 
 <dl class="method">
@@ -218,15 +243,15 @@ vector. This list should contain one norm per vertex.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>vertices</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) &#8211; A #verts by 3 array, where each row contains an ordered
+<li><strong>vertices</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) – A #verts by 3 array, where each row contains an ordered
 [x,y,z] set that describes one vertex.</li>
-<li><strong>triangles</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code>  of int) &#8211; A #tris by 3 array, where each row contains indices of vertices in
+<li><strong>triangles</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code>  of int) – A #tris by 3 array, where each row contains indices of vertices in
 the <cite>vertices</cite> array that are part of the triangle.</li>
-<li><strong>normals</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) &#8211; A #normals by 3 array, where each row contains a normalized
+<li><strong>normals</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) – A #normals by 3 array, where each row contains a normalized
 vector. This list should contain one norm per vertex.</li>
-<li><strong>density</strong> (<em>float</em>) &#8211; The density of the mesh.</li>
-<li><strong>center_of_mass</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) &#8211; The 3D location of the mesh&#8217;s center of mass.</li>
-<li><strong>uniform_com</strong> (<em>bool</em>) &#8211; Whether or not to assume a uniform mass density for center of mass comp</li>
+<li><strong>density</strong> (<em>float</em>) – The density of the mesh.</li>
+<li><strong>center_of_mass</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) – The 3D location of the mesh’s center of mass.</li>
+<li><strong>uniform_com</strong> (<em>bool</em>) – Whether or not to assume a uniform mass density for center of mass comp</li>
 </ul>
 </td>
 </tr>
@@ -237,7 +262,7 @@ vector. This list should contain one norm per vertex.</li>
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.vertices">
 <code class="descname">vertices</code><a class="headerlink" href="#meshpy.Mesh3D.vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; A #verts by 3 array,
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – A #verts by 3 array,
 where each row contains an ordered
 [x,y,z] set that describes one vertex.</p>
 </dd></dl>
@@ -245,7 +270,7 @@ where each row contains an ordered
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.triangles">
 <code class="descname">triangles</code><a class="headerlink" href="#meshpy.Mesh3D.triangles" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int &#8211; A #tris by 3 array,
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of int – A #tris by 3 array,
 where each row contains indices of vertices in
 the <cite>vertices</cite> array that are part of the triangle.</p>
 </dd></dl>
@@ -253,45 +278,57 @@ the <cite>vertices</cite> array that are part of the triangle.</p>
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.normals">
 <code class="descname">normals</code><a class="headerlink" href="#meshpy.Mesh3D.normals" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; A #normals by 3 array, where each row contains a normalized
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – A #normals by 3 array, where each row contains a normalized
 vector. This list should contain one norm per vertex.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.density">
 <code class="descname">density</code><a class="headerlink" href="#meshpy.Mesh3D.density" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>float</em> &#8211; The density of the mesh.</p>
+<dd><p><em>float</em> – The density of the mesh.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.center_of_mass">
 <code class="descname">center_of_mass</code><a class="headerlink" href="#meshpy.Mesh3D.center_of_mass" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3D location of the mesh&#8217;s center of mass.</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3D location of the mesh’s center of mass.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="meshpy.Mesh3D.num_vertices">
+<code class="descname">num_vertices</code><a class="headerlink" href="#meshpy.Mesh3D.num_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">int</span></code> – The number of total vertices</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="meshpy.Mesh3D.num_triangles">
+<code class="descname">num_triangles</code><a class="headerlink" href="#meshpy.Mesh3D.num_triangles" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">int</span></code> – The number of total triangles</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.mass">
 <code class="descname">mass</code><a class="headerlink" href="#meshpy.Mesh3D.mass" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>float</em> &#8211; The mass of the mesh (read-only).</p>
+<dd><p><em>float</em> – The mass of the mesh (read-only).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.inertia">
 <code class="descname">inertia</code><a class="headerlink" href="#meshpy.Mesh3D.inertia" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3x3 inertial matrix of the mesh (read-only).</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3x3 inertial matrix of the mesh (read-only).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.bb_center">
 <code class="descname">bb_center</code><a class="headerlink" href="#meshpy.Mesh3D.bb_center" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3D location of the center of the mesh&#8217;s minimal bounding box
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3D location of the center of the mesh’s minimal bounding box
 (read-only).</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="meshpy.Mesh3D.centroid">
 <code class="descname">centroid</code><a class="headerlink" href="#meshpy.Mesh3D.centroid" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float &#8211; The 3D location of the mesh&#8217;s vertex mean (read-only).</p>
+<dd><p><code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float – The 3D location of the mesh’s vertex mean (read-only).</p>
 </dd></dl>
 
 <dl class="method">
@@ -331,7 +368,7 @@ x, y, and z coordinates represented in the mesh.</td>
 <dl class="method">
 <dt id="meshpy.Mesh3D.bounding_box">
 <code class="descname">bounding_box</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.bounding_box" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the mesh&#8217;s bounding box corners.</p>
+<dd><p>Returns the mesh’s bounding box corners.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -355,7 +392,7 @@ box.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A Mesh3D representation of the mesh&#8217;s bounding box.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A Mesh3D representation of the mesh’s bounding box.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code></td>
 </tr>
@@ -366,7 +403,7 @@ box.</td>
 <dl class="method">
 <dt id="meshpy.Mesh3D.principal_dims">
 <code class="descname">principal_dims</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.principal_dims" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the maximal span of the mesh&#8217;s coordinates.</p>
+<dd><p>Returns the maximal span of the mesh’s coordinates.</p>
 <p>The maximal span is the maximum coordinate value minus
 the minimal coordinate value in each principal axis.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -390,7 +427,7 @@ x, y, and z spans of the mesh.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>direction</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) &#8211; A 3-ndarray of floats that is a unit vector in
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>direction</strong> (<code class="xref py py-obj docutils literal"><span class="pre">numpy.ndarray</span></code> of float) – A 3-ndarray of floats that is a unit vector in
 the direction of the desired support.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A 3-ndarray of floats that represents the support.</td>
@@ -427,7 +464,7 @@ mesh triangle.</td>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>align_to_hull</strong> (<em>bool</em>) &#8211; If true, we re-orient the normals to point outward from
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>align_to_hull</strong> (<em>bool</em>) – If true, we re-orient the normals to point outward from
 the mesh by using the convex hull.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A #triangles by 3 array of floats, where each 3-ndarray
@@ -474,12 +511,12 @@ represents the 3D normal vector of the corresponding triangle.</td>
 <dl class="method">
 <dt id="meshpy.Mesh3D.covariance">
 <code class="descname">covariance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.covariance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total covariance of the mesh&#8217;s triangles.</p>
+<dd><p>Return the total covariance of the mesh’s triangles.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The total covariance of the mesh&#8217;s triangles.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The total covariance of the mesh’s triangles.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
 </tr>
@@ -500,7 +537,7 @@ represents the 3D normal vector of the corresponding triangle.</td>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This method will fail if any bad triangles are present, so run
-remove_bad_tris() first if you&#8217;re unsure if bad triangles are present.</p>
+remove_bad_tris() first if you’re unsure if bad triangles are present.</p>
 </div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -517,7 +554,7 @@ remove_bad_tris() first if you&#8217;re unsure if bad triangles are present.</p>
 <dl class="method">
 <dt id="meshpy.Mesh3D.center_vertices_avg">
 <code class="descname">center_vertices_avg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.center_vertices_avg" title="Permalink to this definition">¶</a></dt>
-<dd><p>Center the mesh&#8217;s vertices at the centroid.</p>
+<dd><p>Center the mesh’s vertices at the centroid.</p>
 <p>This shifts the mesh without rotating it so that
 the centroid (mean) of all vertices is at the origin.</p>
 </dd></dl>
@@ -525,7 +562,7 @@ the centroid (mean) of all vertices is at the origin.</p>
 <dl class="method">
 <dt id="meshpy.Mesh3D.center_vertices_bb">
 <code class="descname">center_vertices_bb</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.center_vertices_bb" title="Permalink to this definition">¶</a></dt>
-<dd><p>Center the mesh&#8217;s vertices at the center of its bounding box.</p>
+<dd><p>Center the mesh’s vertices at the center of its bounding box.</p>
 <p>This shifts the mesh without rotating it so that
 the center of its bounding box is at the origin.</p>
 </dd></dl>
@@ -533,9 +570,9 @@ the center of its bounding box is at the origin.</p>
 <dl class="method">
 <dt id="meshpy.Mesh3D.normalize_vertices">
 <code class="descname">normalize_vertices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.normalize_vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalize the mesh&#8217;s orientation along its principal axes.</p>
+<dd><p>Normalize the mesh’s orientation along its principal axes.</p>
 <p>Transforms the vertices and normals of the mesh
-such that the origin of the resulting mesh&#8217;s coordinate frame
+such that the origin of the resulting mesh’s coordinate frame
 is at the center of the bounding box and the principal axes (as determined
 from PCA) are aligned with the vertical Z, Y, and X axes in that order.</p>
 </dd></dl>
@@ -544,6 +581,12 @@ from PCA) are aligned with the vertical Z, Y, and X axes in that order.</p>
 <dt id="meshpy.Mesh3D.compute_vertex_normals">
 <code class="descname">compute_vertex_normals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.compute_vertex_normals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get normals from triangles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.Mesh3D.flip_normals">
+<code class="descname">flip_normals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.flip_normals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flips the mesh normals.</p>
 </dd></dl>
 
 <dl class="method">
@@ -558,7 +601,7 @@ from PCA) are aligned with the vertical Z, Y, and X axes in that order.</p>
 
 <dl class="method">
 <dt id="meshpy.Mesh3D.subdivide">
-<code class="descname">subdivide</code><span class="sig-paren">(</span><em>min_tri_length=None</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.subdivide" title="Permalink to this definition">¶</a></dt>
+<code class="descname">subdivide</code><span class="sig-paren">(</span><em>min_tri_length=inf</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.subdivide" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the mesh that has been subdivided by one iteration.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -574,7 +617,7 @@ from PCA) are aligned with the vertical Z, Y, and X axes in that order.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>T</strong> (<code class="xref py py-obj docutils literal"><span class="pre">RigidTransform</span></code>) &#8211; The RigidTransform by which the mesh is transformed.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>T</strong> (<code class="xref py py-obj docutils literal"><span class="pre">RigidTransform</span></code>) – The RigidTransform by which the mesh is transformed.</td>
 </tr>
 </tbody>
 </table>
@@ -592,7 +635,7 @@ from PCA) are aligned with the vertical Z, Y, and X axes in that order.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_points</strong> (<em>int</em>) &#8211; The number of random points to generate.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>n_points</strong> (<em>int</em>) – The number of random points to generate.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A n_points by 3 ndarray that contains the sampled 3D points.</td>
 </tr>
@@ -612,7 +655,7 @@ within some distance.</p>
 
 <dl class="method">
 <dt id="meshpy.Mesh3D.get_T_surface_obj">
-<code class="descname">get_T_surface_obj</code><span class="sig-paren">(</span><em>T_surface_ori_obj</em>, <em>delta=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.get_T_surface_obj" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_T_surface_obj</code><span class="sig-paren">(</span><em>T_obj_surface</em>, <em>delta=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.get_T_surface_obj" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the transformation that puts the object resting exactly on
 the z=delta plane</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -620,8 +663,8 @@ the z=delta plane</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>T_surface_ori_obj</strong> (<code class="xref py py-obj docutils literal"><span class="pre">RigidTransform</span></code>) &#8211; The RigidTransform by which the mesh is transformed.</li>
-<li><strong>delta</strong> (<em>float</em>) &#8211; Z-coordinate to rest the mesh on</li>
+<li><strong>T_obj_surface</strong> (<code class="xref py py-obj docutils literal"><span class="pre">RigidTransform</span></code>) – The RigidTransform by which the mesh is transformed.</li>
+<li><strong>delta</strong> (<em>float</em>) – Z-coordinate to rest the mesh on</li>
 </ul>
 </td>
 </tr>
@@ -642,10 +685,10 @@ the z=delta plane</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>scale</strong> (<em>float</em>) &#8211; The desired scaling factor of the selected dimension, if scaling_type
+<li><strong>scale</strong> (<em>float</em>) – The desired scaling factor of the selected dimension, if scaling_type
 is ScalingTypeMin, ScalingTypeMed, ScalingTypeMax, or
 ScalingTypeDiag. Otherwise, the overall scaling factor.</li>
-<li><strong>scaling_type</strong> (<em>int</em>) &#8211; One of ScalingTypeMin, ScalingTypeMed, ScalingTypeMax,
+<li><strong>scaling_type</strong> (<em>int</em>) – One of ScalingTypeMin, ScalingTypeMed, ScalingTypeMax,
 ScalingTypeRelative, or ScalingTypeDiag.
 ScalingTypeMin scales the smallest vertex extent (X, Y, or Z)
 by scale, ScalingTypeMed scales the median vertex extent, and
@@ -667,7 +710,7 @@ ScalingTypeRelative provides absolute scaling.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scale_factor</strong> (<em>float</em>) &#8211; The desired scale factor for the mesh&#8217;s vertices.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>scale_factor</strong> (<em>float</em>) – The desired scale factor for the mesh’s vertices.</td>
 </tr>
 </tbody>
 </table>
@@ -687,7 +730,7 @@ ScalingTypeRelative provides absolute scaling.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>min_prob</strong> (<em>float</em>) &#8211; stable poses that are less likely than this threshold will be discarded</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>min_prob</strong> (<em>float</em>) – stable poses that are less likely than this threshold will be discarded</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of StablePose objects for the mesh.</td>
 </tr>
@@ -698,18 +741,68 @@ ScalingTypeRelative provides absolute scaling.</li>
 </dd></dl>
 
 <dl class="method">
+<dt id="meshpy.Mesh3D.resting_pose">
+<code class="descname">resting_pose</code><span class="sig-paren">(</span><em>T_obj_world</em>, <em>eps=1e-10</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.resting_pose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the stable pose that the mesh will rest on if it lands
+on an infinite planar worksurface quasi-statically in the given
+transformation (only the rotation is used).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>T_obj_world</strong> (<code class="xref py py-obj docutils literal"><span class="pre">autolab_core.RigidTransform</span></code>) – transformation from object to table basis (z-axis upward) specifying the orientation of the mesh</li>
+<li><strong>eps</strong> (<em>float</em>) – numeric tolerance in cone projection solver</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">stable pose specifying the face that the mesh will land on</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal"><span class="pre">StablePose</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.Mesh3D.merge">
+<code class="descname">merge</code><span class="sig-paren">(</span><em>other_mesh</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.merge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines this mesh with another mesh.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>other_mesh</strong> (<code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code>) – the mesh to combine with</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">merged mesh</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal"><span class="pre">Mesh3D</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="meshpy.Mesh3D.flip_tri_orientation">
+<code class="descname">flip_tri_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.flip_tri_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flips the orientation of all triangles.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="meshpy.Mesh3D.visualize">
-<code class="descname">visualize</code><span class="sig-paren">(</span><em>color=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>style='surface'</em>, <em>opacity=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.visualize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">visualize</code><span class="sig-paren">(</span><em>color=(0.5</em>, <em>0.5</em>, <em>0.5)</em>, <em>style=’surface’</em>, <em>opacity=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#meshpy.Mesh3D.visualize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots visualization of mesh using MayaVI.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>color</strong> (<code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code> of float) &#8211; 3-tuple of floats in [0,1] to give the mesh&#8217;s color</li>
-<li><strong>style</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; Either &#8216;surface&#8217;, which produces an opaque surface, or
-&#8216;wireframe&#8217;, which produces a wireframe.</li>
-<li><strong>opacity</strong> (<em>float</em>) &#8211; A value in [0,1] indicating the opacity of the mesh.
+<li><strong>color</strong> (<code class="xref py py-obj docutils literal"><span class="pre">tuple</span></code> of float) – 3-tuple of floats in [0,1] to give the mesh’s color</li>
+<li><strong>style</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – Either ‘surface’, which produces an opaque surface, or
+‘wireframe’, which produces a wireframe.</li>
+<li><strong>opacity</strong> (<em>float</em>) – A value in [0,1] indicating the opacity of the mesh.
 Zero is transparent, one is opaque.</li>
 </ul>
 </td>
@@ -739,10 +832,10 @@ meshlabserver that is used to convert the file into a .obj format.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>filename</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; Path to mesh file.</li>
-<li><strong>cache_dir</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; A directory to store a converted .obj file in, if
-the file isn&#8217;t already in .obj format.</li>
-<li><strong>preproc_script</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) &#8211; The path to an optional script to run before converting
+<li><strong>filename</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – Path to mesh file.</li>
+<li><strong>cache_dir</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – A directory to store a converted .obj file in, if
+the file isn’t already in .obj format.</li>
+<li><strong>preproc_script</strong> (<code class="xref py py-obj docutils literal"><span class="pre">str</span></code>) – The path to an optional script to run before converting
 the mesh file to .obj if necessary.</li>
 </ul>
 </td>
@@ -764,15 +857,18 @@ the mesh file to .obj if necessary.</li>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="rendering.html" class="btn btn-neutral float-right" title="Rendering" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="rendering.html" class="btn btn-neutral float-right" title="Rendering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="io.html" class="btn btn-neutral" title="File I/O" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="io.html" class="btn btn-neutral" title="File I/O" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -806,7 +902,8 @@ the mesh file to .obj if necessary.</li>
             VERSION:'0.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="../_static/jquery.js"></script>
