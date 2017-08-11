@@ -12,6 +12,7 @@ import sys
 import numpy as np
 import scipy.spatial as ss
 import sklearn.decomposition
+import trimesh as tm
 
 from autolab_core import RigidTransform, Point, PointCloud, NormalCloud
 
@@ -105,6 +106,7 @@ class Mesh3D(object):
         self.centroid_ = self._compute_centroid()
         self.surface_area_ = None
         self.face_dag_ = None
+        self.trimesh_ = None
 
         if self.center_of_mass_ is None:
             if uniform_com:
@@ -747,8 +749,7 @@ class Mesh3D(object):
 
         if self.normals_ is not None:
             return Mesh3D(vertices.copy(), self.triangles.copy(), normals=normals.copy(), center_of_mass=com_tf.data)
-        return Mesh3D(vertices.copy(), self.triangles.copy(), center_of_mass=com_tf.data)
-            
+        return Mesh3D(vertices.copy(), self.triangles.copy(), center_of_mass=com_tf.data)            
 
     def random_points(self, n_points):
         """Generate uniformly random points on the surface of the mesh.
@@ -1159,6 +1160,14 @@ class Mesh3D(object):
         # Read mesh from obj file
         return obj_file.ObjFile(obj_filename).read()
 
+    @property
+    def trimesh(self):
+        """ Convert to trimesh. """
+        if self.trimesh_ is None:
+            self.trimesh_ = tm.Trimesh(vertices=self.vertices,
+                                       faces=self.triangles,
+                                       vertex_normals=self.normals)
+        return self.trimesh_
     ##################################################################
     # Private Class Methods
     ##################################################################
