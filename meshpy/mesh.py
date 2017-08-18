@@ -12,8 +12,9 @@ import sys
 import numpy as np
 import scipy.spatial as ss
 import sklearn.decomposition
+import trimesh as tm
 
-from autolab_core import RigidTransform, Point, PointCloud, NormalCloud
+from autolab_core import RigidTransform, Point, Direction, PointCloud, NormalCloud
 
 import obj_file
 import stable_pose as sp
@@ -59,7 +60,8 @@ class Mesh3D(object):
                             [1.0 / 120.0, 1.0 / 120.0, 1.0 / 60.0]])
 
     def __init__(self, vertices, triangles, normals=None,
-                 density=1.0, center_of_mass=None, uniform_com=False):
+                 density=1.0, center_of_mass=None, uniform_com=False,
+                 trimesh=None, T_obj_world=RigidTransform(from_frame='obj', to_frame='world')):
         """Construct a 3D triangular mesh.
 
         Parameters
@@ -105,6 +107,8 @@ class Mesh3D(object):
         self.centroid_ = self._compute_centroid()
         self.surface_area_ = None
         self.face_dag_ = None
+        self.trimesh_ = trimesh
+        self.T_obj_world_ = T_obj_world
 
         if self.center_of_mass_ is None:
             if uniform_com:
@@ -747,8 +751,12 @@ class Mesh3D(object):
 
         if self.normals_ is not None:
             return Mesh3D(vertices.copy(), self.triangles.copy(), normals=normals.copy(), center_of_mass=com_tf.data)
-        return Mesh3D(vertices.copy(), self.triangles.copy(), center_of_mass=com_tf.data)
-            
+        return Mesh3D(vertices.copy(), self.triangles.copy(), center_of_mass=com_tf.data)            
+
+    def update_tf(self, delta_T):
+        """ Updates the mesh transformation. """
+        new_T_obj_world = self.T_obj_world * delta_T.as_frames('obj', 'obj')
+        return Mesh3D(self.vertices, self.triangles, normals=self.normals, trimesh=self.trimesh, T_obj_world=new_T_obj_world)
 
     def random_points(self, n_points):
         """Generate uniformly random points on the surface of the mesh.
@@ -1087,6 +1095,30 @@ class Mesh3D(object):
         return Mesh3D(self.vertices, new_tris, self.normals,
                       center_of_mass=self.center_of_mass)
 
+    def find_contact(self, origin, direction):
+        """ Finds the contact location with the mesh, if it exists. """
+        # create points
+        origin_world = Point(origin, frame='world')
+        direction_world = Direction(direction, frame='world')
+
+        # find contact using trimesh ray intersector
+        origin_obj = self.T_obj_world.inverse() * origin_world
+        direction_obj = self.T_obj_world.inverse() * direction_world
+        locations, _, tri_indices = self.trimesh.ray.intersects_location([origin_obj.data], [direction_obj.data])
+
+        if len(locations) == 0:
+            return None, None
+
+        # return closest point
+        dists = np.linalg.norm(locations - origin_obj.data, axis=1)
+        closest_ind = np.where(dists == np.min(dists))[0][0]
+        point_obj = Point(locations[closest_ind,:], frame='obj')
+        normal_obj = Direction(self.trimesh.face_normals[tri_indices[closest_ind], :], frame='obj')
+        point_world = self.T_obj_world * point_obj
+        normal_world = self.T_obj_world * normal_obj
+
+        return point_world.data, normal_world.data
+
     def visualize(self, color=(0.5, 0.5, 0.5), style='surface', opacity=1.0):
         """Plots visualization of mesh using MayaVI.
 
@@ -1158,6 +1190,20 @@ class Mesh3D(object):
 
         # Read mesh from obj file
         return obj_file.ObjFile(obj_filename).read()
+
+    @property
+    def trimesh(self):
+        """ Convert to trimesh. """
+        if self.trimesh_ is None:
+            self.trimesh_ = tm.Trimesh(vertices=self.vertices,
+                                       faces=self.triangles,
+                                       vertex_normals=self.normals)
+        return self.trimesh_
+
+    @property
+    def T_obj_world(self):
+        """ Return pose. """
+        return self.T_obj_world_
 
     ##################################################################
     # Private Class Methods
