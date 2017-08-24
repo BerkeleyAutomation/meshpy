@@ -56,11 +56,11 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
 
   // parse input data
   int num_projections = boost::python::len(proj_matrices);
-  long int verts_buflen;
-  long int tris_buflen;
-  long int norms_buflen;
-  long int mat_props_buflen;
-  long int light_props_buflen;
+  int verts_buflen;
+  int tris_buflen;
+  int norms_buflen;
+  int mat_props_buflen;
+  int light_props_buflen;
   void const *verts_raw_buffer;
   void const *tris_raw_buffer;
   void const *norms_raw_buffer;
@@ -211,7 +211,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   for (unsigned int k = 0; k < num_projections; k++) {
     // load next projection matrix
     boost::python::object proj_matrix_obj(proj_matrices[k]);
-    long int proj_buflen;
+    int proj_buflen;
     void const *proj_raw_buffer;    
     bool proj_readbuf_success = !PyObject_AsReadBuffer(proj_matrix_obj.ptr(),
                                                        &proj_raw_buffer,
@@ -360,7 +360,7 @@ boost::python::list mul_array(boost::python::numeric::array data, int x)
 { 
   // Access a built-in type (an array)
   boost::python::numeric::array a = data;
-  long int bufLen;
+  int bufLen;
   void const *buffer;
   bool isReadBuffer = !PyObject_AsReadBuffer(a.ptr(), &buffer, &bufLen);
   std::cout << "BUFLEN " << bufLen << std::endl;
