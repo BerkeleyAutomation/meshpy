@@ -17,7 +17,8 @@ from mesh_renderer import VirtualCamera, SceneObject
 class CameraSample(object):
     """ Struct to encapsulate the results of sampling a camera and its pose. """
     def __init__(self, object_to_camera_pose, camera_intr,
-                 radius, elev, az, roll, tx=0, ty=0):
+                 radius, elev, az, roll, tx=0, ty=0, focal=0, 
+                 cx=0, cy=0):
         self.object_to_camera_pose = object_to_camera_pose
         self.camera_intr = camera_intr
         self.radius = radius
@@ -26,6 +27,9 @@ class CameraSample(object):
         self.roll = roll
         self.tx = tx
         self.ty = ty
+        self.focal = focal
+        self.cx = cx
+        self.cy = cy
 
     @property
     def T_camera_world(self):
@@ -369,7 +373,8 @@ class UniformPlanarWorksurfaceRandomVariable(RandomVariable):
                                                          focal, cx, cy)
             camera_sample = CameraSample(object_to_camera_pose,
                                          camera_shifted_intr,
-                                         radius, elev, az, roll, tx, ty)
+                                         radius, elev, az, roll, tx=tx, ty=ty,
+                                         focal=focal, cx=cx, cy=cy)
 
             # convert to camera pose
             samples.append(camera_sample)
