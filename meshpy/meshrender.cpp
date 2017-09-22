@@ -5,9 +5,9 @@
 #include <iostream>
 
 #include "GL/osmesa.h"
-#include <GL/gl.h> 
-#include <GL/glu.h> 
-#include <GL/freeglut.h> 
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/freeglut.h>
 #define GLAPIENTRY
 
 // global rending constants
@@ -56,11 +56,11 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
 
   // parse input data
   int num_projections = boost::python::len(proj_matrices);
-  int verts_buflen;
-  int tris_buflen;
-  int norms_buflen;
-  int mat_props_buflen;
-  int light_props_buflen;
+  long int verts_buflen;
+  long int tris_buflen;
+  long int norms_buflen;
+  long int mat_props_buflen;
+  long int light_props_buflen;
   void const *verts_raw_buffer;
   void const *tris_raw_buffer;
   void const *norms_raw_buffer;
@@ -104,19 +104,19 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   if (!ctx) {
     printf("OSMesaCreateContext failed!\n");
   }
-  
+
   // allocate the image buffer
   buffer = malloc( im_width * im_height * 4 * sizeof(GLubyte) );
   if (!buffer) {
     printf("Alloc image buffer failed!\n");
   }
-  
+
   // bind the buffer to the context and make it current
   if (!OSMesaMakeCurrent( ctx, buffer, GL_UNSIGNED_BYTE, im_width, im_height )) {
     printf("OSMesaMakeCurrent failed!\n");
   }
-  OSMesaPixelStore(OSMESA_Y_UP, 0);     
-  
+  OSMesaPixelStore(OSMESA_Y_UP, 0);
+
   // setup material properties
   if (enable_lighting) {
     GLfloat mat_ambient[4];
@@ -127,7 +127,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     mat_ambient[1] = (GLfloat)mat_props_buffer[mat_ambient_off + 1];
     mat_ambient[2] = (GLfloat)mat_props_buffer[mat_ambient_off + 2];
     mat_ambient[3] = (GLfloat)mat_props_buffer[mat_ambient_off + 3];
-    
+
     mat_diffuse[0] = (GLfloat)mat_props_buffer[mat_diffuse_off + 0];
     mat_diffuse[1] = (GLfloat)mat_props_buffer[mat_diffuse_off + 1];
     mat_diffuse[2] = (GLfloat)mat_props_buffer[mat_diffuse_off + 2];
@@ -137,7 +137,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     mat_specular[1] = (GLfloat)mat_props_buffer[mat_specular_off + 1];
     mat_specular[2] = (GLfloat)mat_props_buffer[mat_specular_off + 2];
     mat_specular[3] = (GLfloat)mat_props_buffer[mat_specular_off + 3];
-    
+
     mat_shininess[0] = (GLfloat)mat_props_buffer[mat_shininess_off + 0];
 
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -146,7 +146,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
-    
+
     // setup lighting properties
     GLfloat light_ambient[4];
     GLfloat light_diffuse[4];
@@ -169,7 +169,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     light_specular[1] = (GLfloat)light_props_buffer[light_specular_off + 1];
     light_specular[2] = (GLfloat)light_props_buffer[light_specular_off + 2];
     light_specular[3] = (GLfloat)light_props_buffer[light_specular_off + 3];
-    
+
     light_position[0] = (GLfloat)light_props_buffer[light_position_off + 0];
     light_position[1] = (GLfloat)light_props_buffer[light_position_off + 1];
     light_position[2] = (GLfloat)light_props_buffer[light_position_off + 2];
@@ -187,7 +187,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
     glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, light_spot_cutoff);
-    
+
     if (debug) {
       std::cout << "Light pos " << light_position[0] << " " << light_position[1] << " " << light_position[2] << " " << light_position[3] << std::endl;
       std::cout << "Light dir " << light_direction[0] << " " << light_direction[1] << " " << light_direction[2] << std::endl;
@@ -204,18 +204,18 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
   glEnable(GL_COLOR_MATERIAL);
 
   // setup rendering
-  glEnable(GL_DEPTH_TEST);   
+  glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   for (unsigned int k = 0; k < num_projections; k++) {
     // load next projection matrix
     boost::python::object proj_matrix_obj(proj_matrices[k]);
-    int proj_buflen;
-    void const *proj_raw_buffer;    
+    long int proj_buflen;
+    void const *proj_raw_buffer;
     bool proj_readbuf_success = !PyObject_AsReadBuffer(proj_matrix_obj.ptr(),
                                                        &proj_raw_buffer,
-                                                       &proj_buflen);    
+                                                       &proj_buflen);
     const double* projection = reinterpret_cast<const double*>(proj_raw_buffer);
     if (debug) {
       std::cout << "Proj Matrix " << k << std::endl;
@@ -236,13 +236,13 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     double far_d_near = far_a_near / far_s_near;
     final_matrix[ 0] = projection[0+2*4] * inv_width_scale_1 + projection[0+0*4] * inv_width_scale_2;
     final_matrix[ 4] = projection[1+2*4] * inv_width_scale_1 + projection[1+0*4] * inv_width_scale_2;
-    final_matrix[ 8] = projection[2+2*4] * inv_width_scale_1 + projection[2+0*4] * inv_width_scale_2; 
+    final_matrix[ 8] = projection[2+2*4] * inv_width_scale_1 + projection[2+0*4] * inv_width_scale_2;
     final_matrix[ 12] = projection[3+2*4] * inv_width_scale_1 + projection[3+0*4] * inv_width_scale_2;
 
     final_matrix[ 1] = projection[0+2*4] * inv_height_scale_1_s + projection[0+1*4] * inv_height_scale_2_s;
-    final_matrix[ 5] = projection[1+2*4] * inv_height_scale_1_s + projection[1+1*4] * inv_height_scale_2_s; 
+    final_matrix[ 5] = projection[1+2*4] * inv_height_scale_1_s + projection[1+1*4] * inv_height_scale_2_s;
     final_matrix[ 9] = projection[2+2*4] * inv_height_scale_1_s + projection[2+1*4] * inv_height_scale_2_s;
-    final_matrix[13] = projection[3+2*4] * inv_height_scale_1_s + projection[3+1*4] * inv_height_scale_2_s;  
+    final_matrix[13] = projection[3+2*4] * inv_height_scale_1_s + projection[3+1*4] * inv_height_scale_2_s;
 
     final_matrix[ 2] = projection[0+2*4] * far_d_near;
     final_matrix[ 6] = projection[1+2*4] * far_d_near;
@@ -266,7 +266,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
     for (unsigned int i = 0; i < num_tris; ++i) {
       glColor3ubv(colorBytes);
       glBegin(GL_POLYGON);
- 
+
       unsigned int a = tris_buffer[3*i + 0];
       unsigned int b = tris_buffer[3*i + 1];
       unsigned int c = tris_buffer[3*i + 2];
@@ -337,7 +337,7 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
                                                               boost::python::object());
     depth_ims.append(depth_arr.copy());
   }
-  
+
   // free the image buffer
   free( buffer );
 
@@ -357,10 +357,10 @@ boost::python::tuple render_mesh(boost::python::list proj_matrices,
 
 // Test function for multiplying an array by a scalar
 boost::python::list mul_array(boost::python::numeric::array data, int x)
-{ 
+{
   // Access a built-in type (an array)
   boost::python::numeric::array a = data;
-  int bufLen;
+  long int bufLen;
   void const *buffer;
   bool isReadBuffer = !PyObject_AsReadBuffer(a.ptr(), &buffer, &bufLen);
   std::cout << "BUFLEN " << bufLen << std::endl;
@@ -383,13 +383,13 @@ boost::python::list mul_array(boost::python::numeric::array data, int x)
   l.append(result);
   return l;
 }
- 
+
 // Expose classes and methods to Python
 BOOST_PYTHON_MODULE(meshrender) {
   Py_Initialize();
   boost::numpy::initialize();
   boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
- 
+
   def("mul_array", &mul_array);
   def("render_mesh", &render_mesh);
 }
