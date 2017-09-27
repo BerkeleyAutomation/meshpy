@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(meshpy)
 
 FIND_PACKAGE(PythonInterp)
-FIND_PACKAGE(PythonLibs)
+FIND_PACKAGE(PythonLibs 2.7)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 FIND_PACKAGE(Boost COMPONENTS python)
