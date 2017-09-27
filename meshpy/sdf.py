@@ -234,15 +234,17 @@ class Sdf3D(Sdf):
         # tranform sdf basis to grid (X and Z axes are flipped!)
         t_world_grid = self.resolution_ * self.center_
         s_world_grid = 1.0 / self.resolution_
-        self.T_world_grid_ = SimilarityTransform(translation=t_world_grid,
-                                                 scale=s_world_grid,
-                                                 from_frame='world',
-                                                 to_frame='grid')
-        self.T_grid_world_ = self.T_world_grid_.inverse()
+        t_grid_sdf = self.origin / self.resolution
+        self.T_grid_sdf_ = SimilarityTransform(translation=t_grid_sdf,
+                                               scale=self.resolution,
+                                               from_frame='grid',
+                                               to_frame='sdf')
         self.T_sdf_world_ = T_sdf_world
+        self.T_grid_world_ = self.T_sdf_world_ * self.T_grid_sdf_
+
+        self.T_sdf_grid_ = self.T_grid_sdf_.inverse()
+        self.T_world_grid_ = self.T_grid_world_.inverse()
         self.T_world_sdf_ = self.T_sdf_world_.inverse()
-        self.T_sdf_grid_ = self.T_world_grid_ * self.T_sdf_world_
-        self.T_grid_sdf_ = self.T_world_sdf_ * self.T_grid_world_
 
         # optionally use only the absolute values (useful for non-closed meshes in 3D)
         self.use_abs_ = use_abs
@@ -651,12 +653,12 @@ class Sdf3D(Sdf):
             points in grid basis
         """
         if isinstance(x_sdf, Number):
-            return self.T_sdf_grid_.scale * x_sdf
+            return self.T_world_grid_.scale * x_sdf
         if direction:
-            points_sdf = NormalCloud(x_sdf.astype(np.float32), frame='sdf')
+            points_sdf = NormalCloud(x_sdf.astype(np.float32), frame='world')
         else:
-            points_sdf = PointCloud(x_sdf.astype(np.float32), frame='sdf')
-        x_grid = self.T_sdf_grid_ * points_sdf
+            points_sdf = PointCloud(x_sdf.astype(np.float32), frame='world')
+        x_grid = self.T_world_grid_ * points_sdf
         return x_grid.data
 
     def transform_pt_grid_to_obj(self, x_grid, direction = False):
@@ -673,12 +675,12 @@ class Sdf3D(Sdf):
             points in sdf basis (meters)
         """
         if isinstance(x_grid, Number):
-            return self.T_grid_sdf_.scale * x_grid
+            return self.T_grid_world_.scale * x_grid
         if direction:
             points_grid = NormalCloud(x_grid.astype(np.float32), frame='grid')
         else:
             points_grid = PointCloud(x_grid.astype(np.float32), frame='grid')
-        x_sdf = self.T_grid_sdf_ * points_grid
+        x_sdf = self.T_grid_world_ * points_grid
         return x_sdf.data
 
     @staticmethod

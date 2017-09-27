@@ -60,7 +60,7 @@ class Mesh3D(object):
                             [1.0 / 120.0, 1.0 / 120.0, 1.0 / 60.0]])
 
     def __init__(self, vertices, triangles, normals=None,
-                 density=1.0, center_of_mass=None, uniform_com=False,
+                 density=1.0, center_of_mass=None,
                  trimesh=None, T_obj_world=RigidTransform(from_frame='obj', to_frame='world')):
         """Construct a 3D triangular mesh.
 
@@ -111,7 +111,7 @@ class Mesh3D(object):
         self.T_obj_world_ = T_obj_world
 
         if self.center_of_mass_ is None:
-            if uniform_com:
+            if self.is_watertight:
                 self.center_of_mass_ = self._compute_com_uniform()
             else:
                 self.center_of_mass_ = self.bb_center_
@@ -520,6 +520,15 @@ class Mesh3D(object):
         center = (max_vertex + min_vertex) / 2
         self.vertices = self.vertices_ - center
 
+    def center_vertices(self):
+        """Center the mesh's vertices on the mesh center of mass.
+
+        This shifts the mesh without rotating it so that
+        the center of its bounding box is at the origin.
+        """
+        self.vertices = self.vertices_ - self.center_of_mass_
+        self.trimesh_ = None # flag re-comp of trimesh
+
     def normalize_vertices(self):
         """Normalize the mesh's orientation along its principal axes.
 
@@ -755,7 +764,7 @@ class Mesh3D(object):
 
     def update_tf(self, delta_T):
         """ Updates the mesh transformation. """
-        new_T_obj_world = self.T_obj_world * delta_T.as_frames('obj', 'obj')
+        new_T_obj_world = self.T_obj_world * delta_T.inverse().as_frames('obj', 'obj')
         return Mesh3D(self.vertices, self.triangles, normals=self.normals, trimesh=self.trimesh, T_obj_world=new_T_obj_world)
 
     def random_points(self, n_points):
@@ -1201,6 +1210,10 @@ class Mesh3D(object):
         return self.trimesh_
 
     @property
+    def is_watertight(self):
+        return self.trimesh.is_watertight
+
+    @property
     def T_obj_world(self):
         """ Return pose. """
         return self.T_obj_world_
@@ -1260,6 +1273,7 @@ class Mesh3D(object):
             3-ndarray of floats that contains the coordinates
             of the center of mass.
         """
+        """
         total_volume = 0
         weighted_point_sum = np.zeros([1, 3])
         for tri in self.triangles_:
@@ -1269,6 +1283,8 @@ class Mesh3D(object):
             total_volume = total_volume + volume
         center_of_mass = weighted_point_sum / total_volume
         return center_of_mass[0]
+        """
+        return self.trimesh.center_mass
 
     def _compute_centroid(self):
         """Computes the centroid (mean) of the mesh's vertices.
