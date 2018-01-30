@@ -73,5 +73,14 @@ class StablePose(object):
 
     @property
     def T_obj_table(self):
-        R_obj_stp = self.r
         return RigidTransform(rotation=self.r, from_frame='obj', to_frame='table')
+
+
+    @property
+    def T_obj_world(self):
+        T_world_obj = RigidTransform(rotation=self.r.T,
+                                     translation=self.x0,
+                                     from_frame='world',
+                                     to_frame='obj')
+        return T_world_obj.inverse()
+    

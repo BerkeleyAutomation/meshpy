@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert a mesh to a URDF')
     parser.add_argument('mesh_filename', type=str, help='OBJ filename of the mesh to convert')
     parser.add_argument('output_dir', type=str, help='directory to store output urdf in')
-    parser.add_argument('--config', type=str, default='cfg/convex_decomposition.yaml',
+    parser.add_argument('--config', type=str, default='cfg/tools/convex_decomposition.yaml',
                         help='config file for urdf conversion')
     args = parser.parse_args()
 

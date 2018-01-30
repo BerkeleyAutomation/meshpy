@@ -7,6 +7,7 @@ from mesh import Mesh3D
 from image_converter import ImageToMeshConverter
 from obj_file import ObjFile
 from off_file import OffFile
+from render_modes import RenderMode
 from sdf import Sdf, Sdf3D
 from sdf_file import SdfFile
 from stable_pose import StablePose
@@ -21,6 +22,7 @@ __all__ = ['Mesh3D',
            'ViewsphereDiscretizer', 'PlanarWorksurfaceDiscretizer', 'VirtualCamera', 'SceneObject',
            'ImageToMeshConverter',
            'ObjFile', 'OffFile',
+           'RenderMode',
            'Sdf', 'Sdf3D',
            'SdfFile',
            'StablePose',

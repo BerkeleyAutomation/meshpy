@@ -98,6 +98,7 @@ def convex_decomposition(mesh, cache_dir='', name='mesh'):
     obj_filename = os.path.join(cache_dir, '%s.obj' %(name))
     vhacd_out_filename = os.path.join(cache_dir, '%s_vhacd.obj' %(name))
     log_filename = os.path.join(cache_dir, 'vhacd_log.txt')
+    print obj_filename
     ObjFile(obj_filename).write(mesh)
 
     # use v-hacd for convex decomposition
@@ -122,6 +123,7 @@ def convex_decomposition(mesh, cache_dir='', name='mesh'):
 
     # read in initial meshes for global properties
     for convex_piece_filename in convex_piece_files:
+
         # read in meshes
         obj_file_path, obj_file_root = os.path.split(convex_piece_filename)
         of = ObjFile(convex_piece_filename)

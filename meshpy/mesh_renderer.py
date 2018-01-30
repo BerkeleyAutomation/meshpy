@@ -17,8 +17,8 @@ except:
 
 from autolab_core import Point, RigidTransform
 from autolab_core.utils import sph2cart, cart2sph
-from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, RgbdImage, ObjectRender, RenderMode
-from meshpy import MaterialProperties, LightingProperties
+from perception import CameraIntrinsics, BinaryImage, ColorImage, DepthImage, RgbdImage, ObjectRender
+from meshpy import MaterialProperties, LightingProperties, RenderMode
 
 class ViewsphereDiscretizer(object):
     """Set of parameters for automatically rendering a set of images from virtual
@@ -676,7 +676,7 @@ class VirtualCamera(object):
                 d = DepthImage(depth_im, frame=self._camera_intr.frame)
                 images.append(d.to_color())
         else:
-            raise ValueError('Render mode %s not supported')
+            raise ValueError('Render mode %s not supported' %(render_mode))
 
         # create object renders
         if stable_pose is not None:
