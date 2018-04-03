@@ -1206,7 +1206,9 @@ class Mesh3D(object):
         if self.trimesh_ is None:
             self.trimesh_ = tm.Trimesh(vertices=self.vertices,
                                        faces=self.triangles,
-                                       vertex_normals=self.normals)
+                                       vertex_normals=self.normals,
+                                       process=True,
+                                       validate=True,)
         self.vertices = self.trimesh_.vertices
         self.triangles = self.trimesh_.faces
         return self.trimesh_
