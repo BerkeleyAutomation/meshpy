@@ -1207,6 +1207,8 @@ class Mesh3D(object):
             self.trimesh_ = tm.Trimesh(vertices=self.vertices,
                                        faces=self.triangles,
                                        vertex_normals=self.normals)
+        self.vertices = self.trimesh.vertices
+        self.triangles = self.trimesh.faces
         return self.trimesh_
 
     @property
