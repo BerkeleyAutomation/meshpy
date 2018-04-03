@@ -113,7 +113,7 @@ class Mesh3D(object):
         if self.center_of_mass_ is None:
             if self.is_watertight:
                 self.center_of_mass_ = self._compute_com_uniform()
-            else:
+            if self.center_of_mass_ is None or np.any(np.isnan(self.center_of_mass_)):
                 self.center_of_mass_ = self.bb_center_
 
 
