@@ -297,9 +297,10 @@ class Sdf3D(Sdf):
         self.coords_buf_[2] = max(0, min(coords[2], self.dims_[2] - 1))
 
         # regular indexing if integers
-        if type(coords[0]) is int and type(coords[1]) is int and type(coords[2]) is int:
-            self.coords_buf_ = self.coords_buf_.astype(np.int)
-            return self.data_[self.coords_buf_[0], self.coords_buf_[1], self.coords_buf_[2]]
+        if np.issubdtype(type(coords[0]), np.integer) and \
+           np.issubdtype(type(coords[1]), np.integer) and \
+           np.issubdtype(type(coords[2]), np.integer):
+            return self.data_[int(self.coords_buf_[0]), int(self.coords_buf_[1]), int(self.coords_buf_[2])]
 
         # otherwise interpolate
         min_coords = np.floor(self.coords_buf_)
