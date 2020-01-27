@@ -234,7 +234,7 @@ class Sdf3D(Sdf):
         # tranform sdf basis to grid (X and Z axes are flipped!)
         t_world_grid = self.resolution_ * self.center_
         s_world_grid = 1.0 / self.resolution_
-        t_grid_sdf = self.origin / self.resolution
+        t_grid_sdf = self.origin
         self.T_grid_sdf_ = SimilarityTransform(translation=t_grid_sdf,
                                                scale=self.resolution,
                                                from_frame='grid',
